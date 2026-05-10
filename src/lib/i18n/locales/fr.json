@@ -1,0 +1,345 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "skip": "Passer",
+    "continue": "Continuer",
+    "back": "Retour",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "confirm": "Confirmer",
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "success": "Succès",
+    "yes": "Oui",
+    "no": "Non",
+    "search": "Rechercher",
+    "comingSoon": "Bientôt disponible",
+    "soon": "à venir",
+    "demoMode": "🎭 Mode démo",
+    "optional": "optionnel"
+  },
+  "auth": {
+    "welcome": {
+      "slide1Title": "Publiez sans effort",
+      "slide1Sub": "Une IA qui crée et publie pour vous sur Facebook et Instagram.",
+      "slide2Title": "Ne ratez plus aucun client",
+      "slide2Sub": "Un agent répond aux appels et messages 24 h / 24, dans votre langue.",
+      "slide3Title": "Décidez avec données",
+      "slide3Sub": "Un assistant qui vous éclaire chaque semaine.",
+      "start": "Commencer",
+      "haveAccount": "J’ai déjà un compte"
+    },
+    "signUp": {
+      "title": "Créer un compte",
+      "subtitle": "Bienvenue sur AfroLink",
+      "emailLabel": "Email",
+      "passwordLabel": "Mot de passe",
+      "confirmLabel": "Confirmer le mot de passe",
+      "cta": "S’inscrire",
+      "haveAccount": "Vous avez déjà un compte ? Se connecter"
+    },
+    "signIn": {
+      "title": "Se connecter",
+      "emailLabel": "Email",
+      "passwordLabel": "Mot de passe",
+      "forgot": "Mot de passe oublié ?",
+      "cta": "Connexion",
+      "noAccount": "Pas encore de compte ? S’inscrire"
+    },
+    "forgot": {
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Entrez votre email, nous vous enverrons un lien.",
+      "cta": "Envoyer le lien",
+      "sent": "Si un compte existe, un email a été envoyé."
+    },
+    "plan": {
+      "title": "Choisissez votre forfait",
+      "monthly": "Mensuel",
+      "annual": "Annuel",
+      "annualBadge": "−15 %",
+      "popular": "Le plus populaire",
+      "decouverte": "Découverte",
+      "performance": "Performance",
+      "premium": "Premium",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "trial": "Essai 15 jours gratuit",
+      "continueWith": "Continuer avec {{plan}}"
+    },
+    "payment": {
+      "title": "Informations de paiement",
+      "card": "Numéro de carte",
+      "expiry": "Expiration",
+      "cvv": "CVV",
+      "name": "Titulaire",
+      "disclaimer": "Annulable à tout moment avant la fin de l’essai. Aucun débit avant le {{date}}.",
+      "cta": "Démarrer mon essai"
+    }
+  },
+  "onboarding": {
+    "welcomeVideo": {
+      "title": "Bienvenue chez AfroLink",
+      "subtitle": "Découvrez l’app en 1 min 30",
+      "duration": "1:30"
+    },
+    "businessProfile": {
+      "title": "Parlez-nous de votre commerce",
+      "stepType": "Type de commerce",
+      "stepName": "Nom et adresse",
+      "stepHours": "Heures d’ouverture",
+      "stepServices": "Services offerts",
+      "stepTone": "Style et langues",
+      "typeRestaurant": "Restaurant",
+      "typeBar": "Bar",
+      "typeGrocery": "Épicerie",
+      "typeSolo": "Service solo",
+      "nameLabel": "Nom du commerce",
+      "addressLabel": "Adresse",
+      "servicesLabel": "Vos services (appuyez pour ajouter)",
+      "toneLabel": "Style de voix",
+      "toneWarm": "Chaleureux",
+      "tonePro": "Professionnel",
+      "toneCasual": "Décontracté",
+      "toneDirect": "Direct",
+      "languagesLabel": "Langues parlées"
+    },
+    "connectSocials": {
+      "title": "Connectez vos réseaux sociaux",
+      "subtitle": "Pour que l’IA puisse publier à votre place.",
+      "explainer": "Vous pourrez désautoriser à tout moment depuis les Paramètres."
+    },
+    "connectGoogle": {
+      "title": "Profil Google d’entreprise",
+      "subtitle": "Pour gérer vos avis Google automatiquement."
+    },
+    "connectCalendar": {
+      "title": "Connectez votre calendrier",
+      "subtitle": "Pour que l’agent puisse prendre des rendez-vous."
+    },
+    "trainAgent": {
+      "title": "Configurez votre agent IA téléphonique",
+      "greetingLabel": "Message d’accueil",
+      "greetingDefault": "Bonjour, vous êtes bien chez {{name}}, comment puis-je vous aider ?",
+      "escalationLabel": "Mots-clés pour transférer (séparés par virgule)",
+      "escalationDefault": "remboursement, réclamation, urgent",
+      "languagesLabel": "Langues",
+      "test": "🎙️ Tester mon agent",
+      "transcript1": "Bonjour, c’est l’agent virtuel de {{name}} !",
+      "transcript2": "Que puis-je faire pour vous ?",
+      "userBook": "Réserver une table",
+      "transcript3": "Pour combien de personnes et à quelle heure ?"
+    },
+    "done": {
+      "title": "Vous êtes prêt !",
+      "subtitle": "Découvrez votre nouveau tableau de bord.",
+      "cta": "Découvrir l’application"
+    }
+  },
+  "tabs": {
+    "home": "Accueil",
+    "content": "Contenu",
+    "inbox": "Messages",
+    "assistant": "Assistant",
+    "crm": "Clients"
+  },
+  "home": {
+    "greeting": "Bonjour {{name}} 👋",
+    "today": "Aujourd’hui",
+    "thisWeek": "Cette semaine",
+    "viewReport": "Voir le rapport complet",
+    "quickActions": "Actions rapides",
+    "qaGenerate": "Générer une publication",
+    "qaInbox": "Voir les messages",
+    "qaAddCustomer": "Ajouter un client",
+    "qaAskAssistant": "Demander à l’assistant",
+    "usage": "Utilisation",
+    "activity": "Activité récente",
+    "statPosts": "Publications",
+    "statCalls": "Appels gérés",
+    "statCustomers": "Nouveaux clients",
+    "vsYesterday": "vs hier"
+  },
+  "content": {
+    "tabs": { "feed": "Feed", "review": "À valider", "scheduled": "Programmées", "drafts": "Brouillons" },
+    "fab": "Générer",
+    "empty": "Aucune publication ici pour le moment.",
+    "generate": {
+      "title": "Générer une publication",
+      "stepTemplate": "Choisissez un modèle",
+      "stepPrompt": "Décrivez votre publication",
+      "stepGenerating": "Création en cours…",
+      "stepPreview": "Aperçu",
+      "tplPromo": "Promo du jour",
+      "tplDish": "Nouveau plat",
+      "tplEvent": "Événement",
+      "tplTestimonial": "Témoignage client",
+      "tplHiring": "Recrutement",
+      "tplCustom": "Personnalisé",
+      "promptLabel": "Que voulez-vous publier ?",
+      "promptPlaceholder": "Ex: 2 pour 1 sur les plats créoles ce vendredi soir",
+      "channels": "Canaux",
+      "tone": "Ton",
+      "regenerate": "Régénérer",
+      "approve": "Approuver",
+      "publishNow": "Publier maintenant",
+      "schedule": "Programmer",
+      "saveDraft": "Sauvegarder en brouillon",
+      "scheduled": "Publication programmée",
+      "published": "Publication envoyée"
+    },
+    "schedule": {
+      "title": "Programmer la publication",
+      "date": "Date",
+      "time": "Heure",
+      "confirm": "Confirmer"
+    },
+    "post": {
+      "engagement": "Engagement",
+      "likes": "J’aime",
+      "comments": "Commentaires",
+      "reach": "Portée",
+      "republish": "Republier",
+      "duplicate": "Dupliquer"
+    }
+  },
+  "inbox": {
+    "title": "Messages",
+    "all": "Tous",
+    "calls": "Appels",
+    "sms": "SMS",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "reviews": "Avis Google",
+    "empty": "Aucun message à afficher.",
+    "aiHandled": "🤖 Géré par IA",
+    "manual": "✋ Envoyé manuellement",
+    "composer": "Écrivez un message…",
+    "aiSuggest": "Suggérer une réponse IA",
+    "viewCustomer": "Voir la fiche client",
+    "markUnread": "Marquer non lu",
+    "archive": "Archiver",
+    "callTransferred": "Transféré à vous",
+    "callDuration": "{{seconds}} s",
+    "review": {
+      "approve": "Approuver et publier",
+      "edit": "Modifier",
+      "reject": "Rejeter",
+      "approved": "Réponse publiée",
+      "draftedBy": "Brouillon proposé par l’IA"
+    }
+  },
+  "assistant": {
+    "tabs": { "chat": "Chat", "report": "Rapport hebdo", "form": "Formulaire guidé" },
+    "chat": {
+      "placeholder": "Posez une question à l’assistant…",
+      "quick1": "Comment va mon business cette semaine ?",
+      "quick2": "Quelle publication a le mieux fonctionné ?",
+      "quick3": "Quel est mon meilleur jour ?",
+      "quick4": "Suggérer une promo"
+    },
+    "report": {
+      "title": "Rapport de la semaine",
+      "trend": "📈 Tendance générale",
+      "wins": "🌟 Vos victoires",
+      "issues": "⚠️ Points d’attention",
+      "actions": "🎯 Actions recommandées",
+      "footer": "Généré le {{date}} • Prochain rapport lundi"
+    },
+    "form": {
+      "title": "Formulaire guidé",
+      "progress": "Question {{n}} sur {{total}}",
+      "q1": "Quel est votre objectif principal ce mois-ci ?",
+      "q1a": "Plus de clients",
+      "q1b": "Augmenter les ventes",
+      "q1c": "Fidéliser",
+      "q1d": "Recruter",
+      "q2": "Combien de clients par semaine actuellement ?",
+      "q3": "Quelle est votre marge moyenne par vente ?",
+      "q4": "Quels jours êtes-vous le plus actif ?",
+      "analyze": "Analyser",
+      "analyzing": "Analyse de vos réponses…",
+      "results": "Vos recommandations"
+    }
+  },
+  "crm": {
+    "title": "Clients",
+    "search": "Rechercher un client",
+    "sortName": "Nom",
+    "sortRecent": "Récent",
+    "sortSource": "Source",
+    "fab": "Ajouter",
+    "import": "Importer CSV",
+    "export": "Exporter CSV",
+    "exported": "Export généré",
+    "empty": "Aucun client pour le moment.",
+    "tabs": { "profile": "Profil", "history": "Historique", "notes": "Notes" },
+    "fields": {
+      "name": "Nom",
+      "phone": "Téléphone",
+      "email": "Email",
+      "address": "Adresse",
+      "source": "Source",
+      "tags": "Étiquettes"
+    },
+    "sources": { "phone": "Appel", "social": "Réseaux sociaux", "walkIn": "Sur place", "referral": "Recommandation", "import": "Import CSV" },
+    "add": { "title": "Nouveau client", "saved": "Client ajouté" },
+    "importMock": {
+      "title": "Importer des contacts",
+      "choose": "Choisir un fichier CSV",
+      "downloading": "Téléchargement du modèle…",
+      "importing": "Import en cours…",
+      "done": "{{n}} contacts importés",
+      "viewContacts": "Voir les contacts"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "profile": "Profil",
+    "business": "Mon commerce",
+    "accounts": "Comptes connectés",
+    "agent": "Configuration de l’agent IA",
+    "subscription": "Abonnement et facturation",
+    "usage": "Utilisation",
+    "language": "Langue",
+    "notifications": "Notifications",
+    "help": "Aide et FAQ",
+    "about": "À propos",
+    "signOut": "Déconnexion",
+    "languageUpdated": "Langue mise à jour",
+    "subscriptionTitle": "Mon abonnement",
+    "currentPlan": "Forfait actuel",
+    "changePlan": "Changer de forfait",
+    "nextBilling": "Prochaine facturation",
+    "paymentMethod": "Méthode de paiement",
+    "billingHistory": "Historique des factures",
+    "cancelSub": "Annuler mon abonnement",
+    "cancelConfirm": "Êtes-vous sûr ? Votre accès restera actif jusqu’à la fin de la période.",
+    "agentHours": "Heures d’activité de l’agent",
+    "testAgent": "Tester l’agent",
+    "notif": {
+      "posts": "Publications",
+      "calls": "Appels",
+      "reviews": "Avis",
+      "weeklyReport": "Rapport hebdomadaire"
+    }
+  },
+  "errors": {
+    "required": "Champ requis",
+    "invalidEmail": "Email invalide",
+    "passwordTooShort": "Mot de passe trop court (min. 8)",
+    "passwordsDontMatch": "Les mots de passe ne correspondent pas"
+  },
+  "channels": {
+    "phone": "Téléphone",
+    "sms": "SMS",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "googleReview": "Avis Google",
+    "email": "Email"
+  }
+}

@@ -1,0 +1,41 @@
+export const colors = {
+  light: {
+    primary: '#4A1942',
+    primaryFg: '#FFFFFF',
+    primaryMuted: '#7A3B6E',
+    accent: '#E89A3F',
+    accentFg: '#1A1A1A',
+    background: '#FAF8F5',
+    surface: '#FFFFFF',
+    surfaceElevated: '#FFFFFF',
+    border: '#E8E2D9',
+    foreground: '#1A1A1A',
+    muted: '#6B6660',
+    mutedFg: '#9B968F',
+    success: '#0F7B3A',
+    warning: '#C97400',
+    danger: '#B81B1B',
+    info: '#2563EB',
+  },
+  dark: {
+    primary: '#9B5C8E',
+    primaryFg: '#FFFFFF',
+    primaryMuted: '#7A3B6E',
+    accent: '#F5B564',
+    accentFg: '#1A1A1A',
+    background: '#0F0D14',
+    surface: '#1A1820',
+    surfaceElevated: '#23202B',
+    border: '#2E2A36',
+    foreground: '#FAF8F5',
+    muted: '#9B968F',
+    mutedFg: '#6B6660',
+    success: '#3DAA68',
+    warning: '#E89A3F',
+    danger: '#E54B4B',
+    info: '#5C8AF5',
+  },
+} as const;
+
+export type ThemeName = keyof typeof colors;
+export type ColorToken = keyof typeof colors.light;
