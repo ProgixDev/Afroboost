@@ -1,0 +1,44 @@
+{
+  "name": "afroboost-api",
+  "version": "0.1.0",
+  "description": "AfroBoost backend — NestJS on Fastify, Supabase, BullMQ.",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main.js",
+    "worker": "node dist/worker.js",
+    "seed:admin": "node dist/scripts/seed-admin.js",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "11.0.4",
+    "@nestjs/common": "11.1.27",
+    "@nestjs/config": "4.0.4",
+    "@nestjs/core": "11.1.27",
+    "@nestjs/jwt": "11.0.0",
+    "@nestjs/platform-fastify": "11.1.27",
+    "@nestjs/throttler": "6.5.0",
+    "@fastify/helmet": "13.0.2",
+    "@supabase/supabase-js": "2.108.2",
+    "bullmq": "5.78.1",
+    "openai": "6.43.0",
+    "stripe": "22.2.1",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.15.1",
+    "ioredis": "5.11.1",
+    "jose": "6.2.3",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "11.0.10",
+    "@nestjs/schematics": "11.0.8",
+    "@types/node": "22.15.3",
+    "typescript": "5.7.3"
+  }
+}

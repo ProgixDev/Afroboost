@@ -5,5 +5,8 @@
       "Bash(npm install *)",
       "Bash(python scripts/upscale_gifs.py)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }
