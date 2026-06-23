@@ -54,7 +54,8 @@ export default function ContentIndex() {
         )}
         ListEmptyComponent={
           <EmptyState
-            icon={<Sparkles size={36} color={c.muted} />}
+            icon={Sparkles}
+            tone="accent"
             title={t('content.empty')}
             description="Tapez le bouton sparkle pour créer votre première publication."
           />

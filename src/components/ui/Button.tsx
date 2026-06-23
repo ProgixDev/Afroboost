@@ -4,6 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from './Text';
 import { useTheme, radius } from '@/lib/theme';
+import { haptic } from '@/lib/utils';
 
 type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'gold';
 type Size = 'sm' | 'md' | 'lg';
@@ -77,6 +78,7 @@ export function Button({
         accessibilityRole="button"
         disabled={disabled || loading}
         onPressIn={(e) => {
+          if (!disabled && !loading) haptic('light');
           scale.value = withSpring(0.96, { damping: 18, stiffness: 320 });
           onPressIn?.(e);
         }}

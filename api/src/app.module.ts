@@ -15,6 +15,7 @@ import { GenerationModule } from './generation/generation.module';
 import { BillingModule } from './billing/billing.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { MetaModule } from './meta/meta.module';
+import { AdsModule } from './ads/ads.module';
 import { AiModule } from './ai/ai.module';
 import { GoogleModule } from './google/google.module';
 import { CrmModule } from './crm/crm.module';
@@ -51,6 +52,7 @@ import { ReportsModule } from './reports/reports.module';
     GenerationModule,
     BillingModule,
     MetaModule,
+    AdsModule,
     CrmModule,
     ReviewsModule,
     InboxModule,

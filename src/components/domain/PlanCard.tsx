@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Check, Lock } from 'lucide-react-native';
 import { Text, Pill } from '@/components/ui';
 import { useTheme, radius } from '@/lib/theme';
 
@@ -50,7 +50,9 @@ export function PlanCard({ name, price, pricePeriod, features, selected, popular
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <Text variant="h2">{name}</Text>
-        {comingSoon ? <Pill tone="muted">🔒 Bientôt</Pill> : null}
+        {comingSoon ? (
+          <Pill tone="muted" leftIcon={<Lock size={12} color={c.muted} />}>Bientôt</Pill>
+        ) : null}
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
         <Text variant="metric" style={{ color: c.accent }}>{price}</Text>

@@ -24,6 +24,8 @@ import { ThemeProvider, useTheme } from '@/lib/theme';
 import { ToastViewport } from '@/components/ui/Toast';
 import { DemoBanner } from '@/components/DemoBanner';
 import { NavBarFab } from '@/components/brand/NavBarFab';
+import { CelebrationOverlay } from '@/components/brand/Celebration';
+import { useAuthStore } from '@/stores/authStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -45,6 +47,7 @@ function ThemedShell() {
       />
       <NavBarFab />
       <ToastViewport />
+      <CelebrationOverlay />
       <StatusBar style={name === 'dark' ? 'light' : 'dark'} />
     </View>
   );
@@ -63,6 +66,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync().catch(() => {});
   }, [loaded]);
+
+  useEffect(() => {
+    useAuthStore.getState().init();
+  }, []);
 
   if (!loaded) {
     return (

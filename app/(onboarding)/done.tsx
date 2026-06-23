@@ -9,6 +9,7 @@ import { Logo } from '@/components/Logo';
 import { AnimatedCheckmark } from '@/components/animations/AnimatedCheckmark';
 import { KenteTexture } from '@/components/brand/KenteTexture';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import { celebrate } from '@/stores/celebrationStore';
 import { useTheme } from '@/lib/theme';
 
 export default function Done() {
@@ -49,7 +50,16 @@ export default function Done() {
             </Text>
           </View>
         </View>
-        <Button title={t('onboarding.done.cta')} variant="gold" fullWidth pill={false} onPress={() => router.replace('/(tabs)')} />
+        <Button
+          title={t('onboarding.done.cta')}
+          variant="gold"
+          fullWidth
+          pill={false}
+          onPress={() => {
+            celebrate({ title: 'Bienvenue !', message: 'Votre console AfroBoost est prête.' });
+            router.replace('/(tabs)');
+          }}
+        />
       </View>
     </View>
   );

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Image, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Heart, MessageCircle, Eye, Edit3, Copy, Trash2, RefreshCw } from 'lucide-react-native';
-import { Text, Card, Button, Pill, BlurHeader, AnimatedNumber } from '@/components/ui';
+import { Text, Card, Button, Pill, BlurHeader, AnimatedNumber, Modal } from '@/components/ui';
 import { ChannelIcon } from '@/components/domain/ChannelIcon';
 import { useTheme } from '@/lib/theme';
 import { mockPosts } from '@/mocks';
@@ -20,6 +20,7 @@ export default function PostDetail() {
   const insets = useSafeAreaInsets();
   const lng = useSettingsStore((s) => s.language);
   const post = mockPosts.find((p) => p.id === id);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!post) {
     return (
@@ -62,13 +63,34 @@ export default function PostDetail() {
             <Button title={t('common.edit')} variant="outline" leftIcon={<Edit3 size={16} color={c.foreground} />} />
             <Button title={t('content.post.duplicate')} variant="outline" leftIcon={<Copy size={16} color={c.foreground} />} onPress={() => toast({ title: 'Dupliquée', variant: 'success' })} />
             <Button title={t('content.post.republish')} variant="outline" leftIcon={<RefreshCw size={16} color={c.foreground} />} onPress={() => toast({ title: 'Republiée', variant: 'success' })} />
-            <Button title={t('common.delete')} variant="destructive" leftIcon={<Trash2 size={16} color="#fff" />} onPress={() => router.back()} />
+            <Button title={t('common.delete')} variant="destructive" leftIcon={<Trash2 size={16} color="#fff" />} onPress={() => setConfirmDelete(true)} />
           </View>
         </View>
       </ScrollView>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
         <BlurHeader back transparent />
       </View>
+
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <Text variant="h2">{t('common.delete')}</Text>
+        <Text variant="body" color="muted" style={{ marginTop: 8 }}>
+          Cette publication sera définitivement supprimée. Cette action est irréversible.
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
+          <Button title={t('common.cancel')} variant="outline" fullWidth onPress={() => setConfirmDelete(false)} style={{ flex: 1 }} />
+          <Button
+            title={t('common.delete')}
+            variant="destructive"
+            fullWidth
+            style={{ flex: 1 }}
+            onPress={() => {
+              setConfirmDelete(false);
+              toast({ title: 'Publication supprimée', variant: 'success' });
+              router.back();
+            }}
+          />
+        </View>
+      </Modal>
     </View>
   );
 }

@@ -27,9 +27,11 @@ export type MockOAuthButtonProps = {
   connected?: boolean;
   label?: string;
   onPress?: () => void;
+  /** Real connect handler; when provided it runs instead of the mock delay. */
+  onConnect?: () => Promise<void>;
 };
 
-export function MockOAuthButton({ provider, connected: connectedProp, label, onPress }: MockOAuthButtonProps) {
+export function MockOAuthButton({ provider, connected: connectedProp, label, onPress, onConnect }: MockOAuthButtonProps) {
   const meta = PROVIDER_META[provider];
   const { c } = useTheme();
   const [busy, setBusy] = useState(false);
@@ -40,11 +42,17 @@ export function MockOAuthButton({ provider, connected: connectedProp, label, onP
   const run = async () => {
     if (connected || busy) return;
     setBusy(true);
-    await mockDelay(1200);
-    setBusy(false);
-    setConnected(true);
-    scale.value = withSequence(withSpring(1.03, { damping: 10 }), withSpring(1));
-    onPress?.();
+    try {
+      if (onConnect) await onConnect();
+      else await mockDelay(1200);
+      setConnected(true);
+      scale.value = withSequence(withSpring(1.03, { damping: 10 }), withSpring(1));
+      onPress?.();
+    } catch {
+      // Leave disconnected on failure so the user can retry.
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -75,7 +83,7 @@ export function MockOAuthButton({ provider, connected: connectedProp, label, onP
         <View style={{ flex: 1 }}>
           <Text variant="bodyEmphasis">{label ?? meta.name}</Text>
           <Text variant="caption" color={connected ? 'success' : 'muted'}>
-            {connected ? '✓ Connecté' : 'Non connecté'}
+            {connected ? 'Connecté' : 'Non connecté'}
           </Text>
         </View>
         {busy ? (
@@ -104,11 +112,18 @@ export function MockOAuthRow(props: MockOAuthButtonProps & { onToggle?: (v: bool
   const toggle = async () => {
     if (busy) return;
     setBusy(true);
-    await mockDelay(900);
-    const next = !connected;
-    setConnected(next);
-    setBusy(false);
-    props.onToggle?.(next);
+    try {
+      // Connecting (not currently connected) can run the real OAuth flow.
+      if (!connected && props.onConnect) await props.onConnect();
+      else await mockDelay(900);
+      const next = !connected;
+      setConnected(next);
+      props.onToggle?.(next);
+    } catch {
+      // Keep prior state on failure.
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -129,7 +144,7 @@ export function MockOAuthRow(props: MockOAuthButtonProps & { onToggle?: (v: bool
       </View>
       <View style={{ flex: 1 }}>
         <Text variant="bodyEmphasis">{props.label ?? meta.name}</Text>
-        <Text variant="caption" color={connected ? 'success' : 'muted'}>{connected ? '✓ Connecté' : 'Non connecté'}</Text>
+        <Text variant="caption" color={connected ? 'success' : 'muted'}>{connected ? 'Connecté' : 'Non connecté'}</Text>
       </View>
       <Pressable onPress={toggle} disabled={busy}>
         {busy ? <ActivityIndicator color={c.accent} /> : <Text style={{ color: connected ? c.danger : c.accent, fontFamily: 'Inter_600SemiBold' }}>{connected ? 'Déconnecter' : 'Connecter'}</Text>}

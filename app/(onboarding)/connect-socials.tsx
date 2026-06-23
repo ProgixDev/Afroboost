@@ -7,6 +7,7 @@ import { Text, Button, FloatingBack } from '@/components/ui';
 import { Logo } from '@/components/Logo';
 import { MockOAuthButton } from '@/components/domain/MockOAuthButton';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import { connectMeta } from '@/lib/api/connect';
 import { useTheme } from '@/lib/theme';
 
 export default function ConnectSocials() {
@@ -27,8 +28,8 @@ export default function ConnectSocials() {
           <Text variant="serifItalic" color="muted" style={{ marginTop: 6 }}>{t('onboarding.connectSocials.subtitle')}</Text>
         </View>
         <View style={{ gap: 12 }}>
-          <MockOAuthButton provider="facebook" onPress={() => toggle('facebook', true)} />
-          <MockOAuthButton provider="instagram" onPress={() => toggle('instagram', true)} />
+          <MockOAuthButton provider="facebook" onConnect={connectMeta} onPress={() => toggle('facebook', true)} />
+          <MockOAuthButton provider="instagram" onConnect={connectMeta} onPress={() => toggle('instagram', true)} />
         </View>
         <Text variant="caption" color="muted">{t('onboarding.connectSocials.explainer')}</Text>
         <View style={{ flex: 1 }} />

@@ -15,7 +15,17 @@ const SCOPES = [
   'instagram_basic',
   'instagram_content_publish',
   'business_management',
+  // Messaging (Messenger + Instagram Direct) into the unified inbox.
+  'pages_messaging',
+  'pages_manage_metadata',
+  'instagram_manage_messages',
+  // Ads (Marketing API) — create/manage campaigns + read insights.
+  'ads_management',
 ];
+
+// Webhook fields we subscribe each connected page to, so inbound Messenger
+// (and, via the linked page, Instagram) messages are delivered to our webhook.
+const PAGE_SUBSCRIBED_FIELDS = 'messages,messaging_postbacks';
 
 interface PublishInput {
   caption: string;
@@ -118,6 +128,26 @@ export class MetaService {
         metadata: { pageId: page.id },
       });
     }
+
+    // Subscribe the page so inbound messages reach our webhook. Best-effort:
+    // a failure here must not abort the connect flow (publishing still works).
+    await this.subscribePageToWebhooks(page.id, page.access_token);
+  }
+
+  /** Subscribe our app to the page's messaging webhook fields. */
+  private async subscribePageToWebhooks(
+    pageId: string,
+    pageToken: string,
+  ): Promise<void> {
+    try {
+      await this.graphPost<{ success?: boolean }>(`/${pageId}/subscribed_apps`, {
+        subscribed_fields: PAGE_SUBSCRIBED_FIELDS,
+        access_token: pageToken,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Page ${pageId} webhook subscription failed: ${msg}`);
+    }
   }
 
   // ── Publishing ─────────────────────────────────────────────────────────
@@ -200,14 +230,16 @@ export class MetaService {
   }
 
   // ── Graph helpers ─────────────────────────────────────────────────────
+  // Public so sibling services in this module (messaging, ads) can reuse the
+  // shared base URL, query encoding, and error handling.
 
-  private async graph<T>(path: string, params: Record<string, string>): Promise<T> {
+  async graph<T>(path: string, params: Record<string, string>): Promise<T> {
     const url = `${GRAPH}${path}?${new URLSearchParams(params).toString()}`;
     const res = await fetch(url);
     return this.parse<T>(res);
   }
 
-  private async graphPost<T>(
+  async graphPost<T>(
     path: string,
     params: Record<string, string>,
   ): Promise<T> {

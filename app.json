@@ -8,7 +8,8 @@
     "scheme": "afroboost",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mohameddev7.afroboost"
     },
     "android": {
       "adaptiveIcon": {

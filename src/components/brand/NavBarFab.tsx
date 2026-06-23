@@ -9,6 +9,7 @@ import { Sheet } from '@/components/ui/Sheet';
 import { AIOrb } from './AIOrb';
 import { useTheme, radius } from '@/lib/theme';
 import { useTranslation } from 'react-i18next';
+import { haptic } from '@/lib/utils';
 
 const TABS = [
   { key: 'home', href: '/(tabs)', icon: Home, labelKey: 'tabs.home' },
@@ -98,7 +99,7 @@ export function NavBarFab() {
             return (
               <Pressable
                 key={tab.key}
-                onPress={() => router.push(tab.href as any)}
+                onPress={() => { if (!active) haptic('select'); router.push(tab.href as any); }}
                 style={{ flex: 1, alignItems: 'center', paddingVertical: 6, gap: 2 }}
               >
                 <Icon size={20} color={active ? c.accent : c.muted} strokeWidth={active ? 2.2 : 1.8} />

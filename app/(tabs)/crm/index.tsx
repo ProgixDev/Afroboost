@@ -4,9 +4,10 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Upload, Download, MoreVertical, Users } from 'lucide-react-native';
-import { Text, EmptyState, Input, Sheet, Button, BlurHeader } from '@/components/ui';
+import { Text, EmptyState, Input, Sheet, Button, BlurHeader, QueryBoundary } from '@/components/ui';
 import { CustomerListItem } from '@/components/domain/CustomerListItem';
-import { mockCustomers } from '@/mocks';
+import { useCustomers } from '@/lib/api';
+import type { Customer } from '@/types';
 import { useTheme } from '@/lib/theme';
 import { toast } from '@/stores/toastStore';
 
@@ -20,15 +21,16 @@ export default function CrmIndex() {
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<Sort>('recent');
   const [menuOpen, setMenuOpen] = useState(false);
+  const query = useCustomers();
 
   const items = useMemo(() => {
-    let list = mockCustomers;
+    let list = query.data ?? [];
     if (q) list = list.filter((x) => x.name.toLowerCase().includes(q.toLowerCase()));
     if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     if (sort === 'source') list = [...list].sort((a, b) => a.source.localeCompare(b.source));
     if (sort === 'recent') list = [...list].sort((a, b) => (b.lastContactAt ?? '').localeCompare(a.lastContactAt ?? ''));
     return list;
-  }, [q, sort]);
+  }, [q, sort, query.data]);
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -64,15 +66,19 @@ export default function CrmIndex() {
           })}
         </ScrollView>
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(c) => c.id}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
-        renderItem={({ item }) => (
-          <CustomerListItem customer={item} onPress={() => router.push({ pathname: '/(tabs)/crm/[customerId]', params: { customerId: item.id } })} />
+      <QueryBoundary query={query} empty={{ icon: Users, title: t('crm.empty') }}>
+        {() => (
+          <FlatList
+            data={items}
+            keyExtractor={(c) => c.id}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
+            renderItem={({ item }: { item: Customer }) => (
+              <CustomerListItem customer={item} onPress={() => router.push({ pathname: '/(tabs)/crm/[customerId]', params: { customerId: item.id } })} />
+            )}
+            ListEmptyComponent={<EmptyState icon={Users} title={t('crm.empty')} />}
+          />
         )}
-        ListEmptyComponent={<EmptyState icon={<Users size={36} color={c.muted} />} title={t('crm.empty')} />}
-      />
+      </QueryBoundary>
       <Sheet open={menuOpen} onClose={() => setMenuOpen(false)}>
         <Text variant="h2" style={{ marginBottom: 12 }}>Actions</Text>
         <View style={{ gap: 8 }}>

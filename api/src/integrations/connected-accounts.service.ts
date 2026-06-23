@@ -65,6 +65,22 @@ export class ConnectedAccountsService {
     return data;
   }
 
+  /**
+   * Reverse lookup used by inbound webhooks, which arrive keyed by the external
+   * account id (Facebook page id or Instagram account id) with no tenant
+   * context. Returns the owning row (tenant + tokens) or null.
+   */
+  async findByExternalAccount(provider: Provider, externalAccountId: string) {
+    const { data } = await this.supabase.admin
+      .from('connected_accounts')
+      .select('*')
+      .eq('provider', provider)
+      .eq('external_account_id', externalAccountId)
+      .eq('connected', true)
+      .maybeSingle();
+    return data;
+  }
+
   async list(tenantId: string) {
     const { data } = await this.supabase.admin
       .from('connected_accounts')

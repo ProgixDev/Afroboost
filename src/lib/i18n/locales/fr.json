@@ -18,7 +18,7 @@
     "search": "Rechercher",
     "comingSoon": "Bientôt disponible",
     "soon": "à venir",
-    "demoMode": "🎭 Mode démo",
+    "demoMode": "Mode démo",
     "optional": "optionnel"
   },
   "auth": {
@@ -136,7 +136,7 @@
       "escalationLabel": "Mots-clés pour transférer (séparés par virgule)",
       "escalationDefault": "remboursement, réclamation, urgent",
       "languagesLabel": "Langues",
-      "test": "🎙️ Tester mon agent",
+      "test": "Tester mon agent",
       "transcript1": "Bonjour, c’est l’agent virtuel de {{name}} !",
       "transcript2": "Que puis-je faire pour vous ?",
       "userBook": "Réserver une table",
@@ -153,10 +153,37 @@
     "content": "Contenu",
     "inbox": "Messages",
     "assistant": "Assistant",
-    "crm": "Clients"
+    "crm": "Clients",
+    "notifications": "Notifications"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "emptyDesc": "Vos alertes apparaîtront ici dès qu’il se passe quelque chose.",
+    "markAllRead": "Tout lire"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Clients, publications, messages…",
+    "hint": "Tapez au moins 2 caractères pour rechercher.",
+    "empty": "Aucun résultat",
+    "emptyDesc": "Essayez un autre mot-clé.",
+    "customers": "Clients",
+    "posts": "Publications",
+    "conversations": "Conversations"
+  },
+  "upgrade": {
+    "title": "Passez à la vitesse supérieure",
+    "subtitle": "Débloquez tout le potentiel d’AfroBoost.",
+    "limitReached": "Limite atteinte",
+    "nearLimit": "Vous approchez de votre limite",
+    "cta": "Choisir ce forfait",
+    "current": "Forfait actuel",
+    "completeProfile": "Complétez votre profil",
+    "completeProfileDesc": "{{percent}} % terminé — finalisez pour tout débloquer."
   },
   "home": {
-    "greeting": "Bonjour {{name}} 👋",
+    "greeting": "Bonjour {{name}}",
     "today": "Aujourd’hui",
     "thisWeek": "Cette semaine",
     "viewReport": "Voir le rapport complet",
@@ -225,8 +252,8 @@
     "facebook": "Facebook",
     "reviews": "Avis Google",
     "empty": "Aucun message à afficher.",
-    "aiHandled": "🤖 Géré par IA",
-    "manual": "✋ Envoyé manuellement",
+    "aiHandled": "Géré par IA",
+    "manual": "Envoyé manuellement",
     "composer": "Écrivez un message…",
     "aiSuggest": "Suggérer une réponse IA",
     "viewCustomer": "Voir la fiche client",
@@ -253,10 +280,10 @@
     },
     "report": {
       "title": "Rapport de la semaine",
-      "trend": "📈 Tendance générale",
-      "wins": "🌟 Vos victoires",
-      "issues": "⚠️ Points d’attention",
-      "actions": "🎯 Actions recommandées",
+      "trend": "Tendance générale",
+      "wins": "Vos victoires",
+      "issues": "Points d’attention",
+      "actions": "Actions recommandées",
       "footer": "Généré le {{date}} • Prochain rapport lundi"
     },
     "form": {

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Dimensions, StyleSheet } from 'react-native';
+import { View, Dimensions, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -202,6 +202,16 @@ export default function Welcome() {
           <GradientLayer key={`bg-${i}`} index={i} scrollX={scrollX} colors={s.gradient} tone={s.tone} />
         ))}
       </View>
+
+      <Pressable
+        onPress={() => router.push('/(auth)/auth-choice')}
+        hitSlop={10}
+        style={{ position: 'absolute', top: insets.top + 12, right: 20, zIndex: 10, padding: 6 }}
+      >
+        <Text variant="caption" style={{ color: c.muted, fontFamily: 'Inter_600SemiBold' }}>
+          {t('common.skip')}
+        </Text>
+      </Pressable>
 
       <Animated.View
         entering={FadeInDown.duration(500)}

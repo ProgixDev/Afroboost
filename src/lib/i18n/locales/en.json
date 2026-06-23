@@ -18,7 +18,7 @@
     "search": "Search",
     "comingSoon": "Coming soon",
     "soon": "soon",
-    "demoMode": "🎭 Demo mode",
+    "demoMode": "Demo mode",
     "optional": "optional"
   },
   "auth": {
@@ -136,7 +136,7 @@
       "escalationLabel": "Keywords that transfer to you (comma-separated)",
       "escalationDefault": "refund, complaint, urgent",
       "languagesLabel": "Languages",
-      "test": "🎙️ Test my agent",
+      "test": "Test my agent",
       "transcript1": "Hi, this is the virtual assistant for {{name}}!",
       "transcript2": "How can I help?",
       "userBook": "Book a table",
@@ -153,10 +153,37 @@
     "content": "Content",
     "inbox": "Inbox",
     "assistant": "Assistant",
-    "crm": "Customers"
+    "crm": "Customers",
+    "notifications": "Notifications"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "emptyDesc": "Your alerts will show up here as things happen.",
+    "markAllRead": "Mark all read"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Customers, posts, messages…",
+    "hint": "Type at least 2 characters to search.",
+    "empty": "No results",
+    "emptyDesc": "Try a different keyword.",
+    "customers": "Customers",
+    "posts": "Posts",
+    "conversations": "Conversations"
+  },
+  "upgrade": {
+    "title": "Level up your business",
+    "subtitle": "Unlock the full power of AfroBoost.",
+    "limitReached": "Limit reached",
+    "nearLimit": "You're close to your limit",
+    "cta": "Choose this plan",
+    "current": "Current plan",
+    "completeProfile": "Complete your profile",
+    "completeProfileDesc": "{{percent}}% done — finish to unlock everything."
   },
   "home": {
-    "greeting": "Hi {{name}} 👋",
+    "greeting": "Hi {{name}}",
     "today": "Today",
     "thisWeek": "This week",
     "viewReport": "View full report",
@@ -225,8 +252,8 @@
     "facebook": "Facebook",
     "reviews": "Google reviews",
     "empty": "No messages to show.",
-    "aiHandled": "🤖 Handled by AI",
-    "manual": "✋ Sent manually",
+    "aiHandled": "Handled by AI",
+    "manual": "Sent manually",
     "composer": "Type a message…",
     "aiSuggest": "AI suggest reply",
     "viewCustomer": "View customer profile",
@@ -253,10 +280,10 @@
     },
     "report": {
       "title": "Weekly report",
-      "trend": "📈 Overall trend",
-      "wins": "🌟 Your wins",
-      "issues": "⚠️ Watch outs",
-      "actions": "🎯 Recommended actions",
+      "trend": "Overall trend",
+      "wins": "Your wins",
+      "issues": "Watch outs",
+      "actions": "Recommended actions",
       "footer": "Generated on {{date}} • Next report Monday"
     },
     "form": {

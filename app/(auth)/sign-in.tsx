@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import { View, ScrollView, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,18 +15,40 @@ export default function SignIn() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const signIn = useAuthStore((s) => s.signIn);
+  const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
   const onboarded = useOnboardingStore((s) => s.isComplete);
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const submit = async () => {
+    if (!email || !pw) {
+      Alert.alert(t('common.error'), t('errors.required'));
+      return;
+    }
     setLoading(true);
     try {
-      await signIn(email || 'patrick@chezpatrick.ca', pw || 'demo1234');
+      await signIn(email, pw);
       router.replace(onboarded ? '/(tabs)' : '/(onboarding)/welcome-video');
+    } catch (e) {
+      Alert.alert(t('auth.signIn.title'), e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const submitGoogle = async () => {
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      if (useAuthStore.getState().isAuthenticated) {
+        router.replace(onboarded ? '/(tabs)' : '/(onboarding)/welcome-video');
+      }
+    } catch (e) {
+      Alert.alert('Google sign-in failed', e instanceof Error ? e.message : String(e));
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -61,6 +83,13 @@ export default function SignIn() {
         </View>
         <View style={{ gap: 12 }}>
           <Button title={t('auth.signIn.cta')} onPress={submit} loading={loading} fullWidth />
+          <Button
+            title="Continuer avec Google"
+            variant="outline"
+            onPress={submitGoogle}
+            loading={googleLoading}
+            fullWidth
+          />
           <Pressable onPress={() => router.replace('/(auth)/sign-up')} style={{ alignItems: 'center', paddingVertical: 8 }}>
             <Text color="muted">{t('auth.signIn.noAccount')}</Text>
           </Pressable>

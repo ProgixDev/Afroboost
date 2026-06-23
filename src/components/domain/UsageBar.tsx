@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
+import { ArrowUpRight } from 'lucide-react-native';
 import { Text, ProgressBar } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
@@ -28,8 +29,12 @@ export function UsageBar({
       </View>
       <ProgressBar value={ratio} tone={tone as any} />
       {showUpgrade ? (
-        <Pressable onPress={onUpgrade} style={{ alignSelf: 'flex-start' }}>
-          <Text style={{ color: c.accent, fontFamily: 'Inter_600SemiBold' }}>↗ Mettre à niveau</Text>
+        <Pressable
+          onPress={onUpgrade}
+          style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4 }}
+        >
+          <ArrowUpRight size={14} color={c.accent} />
+          <Text style={{ color: c.accent, fontFamily: 'Inter_600SemiBold' }}>Mettre à niveau</Text>
         </Pressable>
       ) : null}
     </View>

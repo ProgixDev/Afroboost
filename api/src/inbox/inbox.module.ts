@@ -4,8 +4,10 @@ import { EmailService } from './email.service';
 import { CallsService } from './calls.service';
 import { MockFeederService } from './mock-feeder.service';
 import { InboxController } from './inbox.controller';
+import { MetaModule } from '../meta/meta.module';
 
 @Module({
+  imports: [MetaModule],
   controllers: [InboxController],
   providers: [InboxService, EmailService, CallsService, MockFeederService],
   exports: [InboxService, EmailService],

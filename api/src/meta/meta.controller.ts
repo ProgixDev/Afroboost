@@ -2,22 +2,27 @@ import {
   BadRequestException,
   Controller,
   Get,
+  Headers,
   Post,
   Query,
+  RawBodyRequest,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { OwnerAuthGuard } from '../common/guards/owner-auth.guard';
 import { CurrentTenant } from '../common/decorators/current-owner.decorator';
 import { MetaService } from './meta.service';
+import { MetaMessagingService } from './meta-messaging.service';
 
 /** Meta OAuth connect/callback + webhook. Routes under /api/integrations/meta. */
 @Controller('integrations/meta')
 export class MetaController {
   constructor(
     private readonly meta: MetaService,
+    private readonly messaging: MetaMessagingService,
     private readonly config: ConfigService,
   ) {}
 
@@ -55,10 +60,20 @@ export class MetaController {
     throw new BadRequestException('Verification failed');
   }
 
-  /** Webhook event receiver (page/IG change notifications). */
+  /**
+   * Webhook event receiver: inbound Messenger + Instagram Direct messages.
+   * Verifies the X-Hub-Signature-256 header against the raw body before parsing.
+   * Always returns 200 quickly so Meta does not retry/disable the subscription.
+   */
   @Post('webhook')
-  receive() {
-    // TODO(phase-6): handle comment/mention notifications for the inbox.
+  async receive(
+    @Req() req: RawBodyRequest<FastifyRequest>,
+    @Headers('x-hub-signature-256') signature: string,
+  ) {
+    if (!this.messaging.verifySignature(req.rawBody, signature)) {
+      throw new BadRequestException('Invalid signature');
+    }
+    await this.messaging.handleWebhook(req.body);
     return { received: true };
   }
 }

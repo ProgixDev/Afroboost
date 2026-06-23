@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { EmailService } from './email.service';
+import { MetaMessagingService } from '../meta/meta-messaging.service';
 
 @Injectable()
 export class InboxService {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly email: EmailService,
+    private readonly meta: MetaMessagingService,
   ) {}
 
   async listConversations(tenantId: string, channel?: string) {
@@ -44,15 +46,21 @@ export class InboxService {
     return { ...conversation, messages: messages ?? [] };
   }
 
-  /** Reply as the business. For the email channel, actually sends via Gmail. */
+  /**
+   * Reply as the business. Email goes out via Gmail; Facebook/Instagram go out
+   * via the Meta Send API (subject to the 24h messaging window). Other channels
+   * are recorded locally only.
+   */
   async reply(tenantId: string, id: string, text: string) {
     const { data: conversation } = await this.supabase.admin
       .from('conversations')
-      .select('id, channel, customer_id, customer_name')
+      .select('id, channel, customer_id, external_thread_id, last_inbound_at')
       .eq('tenant_id', tenantId)
       .eq('id', id)
       .maybeSingle();
     if (!conversation) throw new NotFoundException('Conversation not found');
+
+    let externalMessageId: string | null = null;
 
     if (conversation.channel === 'email' && conversation.customer_id) {
       const { data: customer } = await this.supabase.admin
@@ -68,6 +76,26 @@ export class InboxService {
           text,
         );
       }
+    } else if (
+      conversation.channel === 'facebook' &&
+      conversation.external_thread_id
+    ) {
+      externalMessageId = await this.meta.sendFacebook(
+        tenantId,
+        conversation.external_thread_id,
+        text,
+        conversation.last_inbound_at,
+      );
+    } else if (
+      conversation.channel === 'instagram' &&
+      conversation.external_thread_id
+    ) {
+      externalMessageId = await this.meta.sendInstagram(
+        tenantId,
+        conversation.external_thread_id,
+        text,
+        conversation.last_inbound_at,
+      );
     }
 
     const now = new Date().toISOString();
@@ -75,7 +103,9 @@ export class InboxService {
       conversation_id: id,
       tenant_id: tenantId,
       author: 'business',
+      direction: 'out',
       text,
+      external_message_id: externalMessageId,
     });
     await this.supabase.admin
       .from('conversations')

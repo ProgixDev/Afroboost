@@ -23,7 +23,7 @@ export default function Calls() {
         keyExtractor={(c) => c.id}
         contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
         renderItem={({ item }) => <CallListItem call={item} onPress={() => setOpen(item)} />}
-        ListEmptyComponent={<EmptyState icon={<Phone size={36} color={c.muted} />} title={t('inbox.empty')} />}
+        ListEmptyComponent={<EmptyState icon={Phone} title={t('inbox.empty')} />}
       />
       <Sheet open={!!open} onClose={() => setOpen(null)}>
         {open ? (

@@ -29,7 +29,7 @@ export default function AgentConfig() {
         <Button title={t('common.save')} fullWidth onPress={() => toast({ title: 'Agent enregistré', variant: 'success' })} />
       </View>
       <Sheet open={open} onClose={() => setOpen(false)}>
-        <Text variant="h2" style={{ marginBottom: 12 }}>🎙️ Test de l’agent</Text>
+        <Text variant="h2" style={{ marginBottom: 12 }}>Test de l’agent</Text>
         <View style={{ alignItems: 'center', marginVertical: 12 }}>
           <Waveform />
         </View>

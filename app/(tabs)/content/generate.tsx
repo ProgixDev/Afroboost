@@ -3,12 +3,27 @@ import { View, Image, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Sparkles, RefreshCw, Check, ThumbsUp, Camera } from 'lucide-react-native';
-import { Text, Card, Button, Input, Skeleton, Sheet, Stepper, RadioGroup, Pill, BlurHeader } from '@/components/ui';
+import {
+  Sparkles,
+  RefreshCw,
+  Check,
+  ThumbsUp,
+  Camera,
+  Tag,
+  UtensilsCrossed,
+  CalendarDays,
+  Quote,
+  Briefcase,
+  PenLine,
+} from 'lucide-react-native';
+import { Text, Card, Button, Input, Skeleton, Sheet, Stepper, RadioGroup, Pill, BlurHeader, IconTile } from '@/components/ui';
+import type { IconTileTone } from '@/components/ui';
+import type { LucideIcon } from 'lucide-react-native';
 import { AIOrb } from '@/components/brand/AIOrb';
 import { useTheme, radius } from '@/lib/theme';
 import { mockDelay } from '@/lib/mock-api';
 import { toast } from '@/stores/toastStore';
+import { celebrate } from '@/stores/celebrationStore';
 
 type Step = 0 | 1 | 2 | 3;
 
@@ -29,13 +44,13 @@ export default function Generate() {
   const fullCaption =
     'Ce vendredi soir 🎉 venez goûter notre poulet boucané fait maison et notre nouveau riz djon-djon. Réservation conseillée — places limitées. #ChezPatrick #Montréal';
 
-  const templates = [
-    { id: 'promo', label: t('content.generate.tplPromo'), emoji: '🏷️' },
-    { id: 'dish', label: t('content.generate.tplDish'), emoji: '🍽️' },
-    { id: 'event', label: t('content.generate.tplEvent'), emoji: '🎉' },
-    { id: 'testimonial', label: t('content.generate.tplTestimonial'), emoji: '⭐' },
-    { id: 'hiring', label: t('content.generate.tplHiring'), emoji: '👔' },
-    { id: 'custom', label: t('content.generate.tplCustom'), emoji: '✏️' },
+  const templates: { id: string; label: string; icon: LucideIcon; tone: IconTileTone }[] = [
+    { id: 'promo', label: t('content.generate.tplPromo'), icon: Tag, tone: 'accent' },
+    { id: 'dish', label: t('content.generate.tplDish'), icon: UtensilsCrossed, tone: 'primary' },
+    { id: 'event', label: t('content.generate.tplEvent'), icon: CalendarDays, tone: 'info' },
+    { id: 'testimonial', label: t('content.generate.tplTestimonial'), icon: Quote, tone: 'success' },
+    { id: 'hiring', label: t('content.generate.tplHiring'), icon: Briefcase, tone: 'deep' },
+    { id: 'custom', label: t('content.generate.tplCustom'), icon: PenLine, tone: 'muted' },
   ];
 
   const startGenerate = async () => {
@@ -83,7 +98,7 @@ export default function Generate() {
                       minHeight: 120,
                     }}
                   >
-                    <Text style={{ fontSize: 28 }}>{tpl.emoji}</Text>
+                    <IconTile icon={tpl.icon} tone={tpl.tone} size="md" />
                     <Text variant="h2" style={{ fontSize: 18 }}>{tpl.label}</Text>
                   </Pressable>
                 );
@@ -187,7 +202,7 @@ export default function Generate() {
           <Text variant="h2">Que voulez-vous faire ?</Text>
         </View>
         <View style={{ gap: 10 }}>
-          <Button title={t('content.generate.publishNow')} onPress={() => { setScheduleOpen(false); toast({ title: t('content.generate.published'), variant: 'success' }); router.replace('/(tabs)/content'); }} fullWidth />
+          <Button title={t('content.generate.publishNow')} onPress={() => { setScheduleOpen(false); celebrate({ title: 'Publication envoyée !', message: 'Votre contenu est en ligne sur vos réseaux.' }); router.replace('/(tabs)/content'); }} fullWidth />
           <Button title={t('content.generate.schedule')} variant="secondary" onPress={() => { setScheduleOpen(false); router.push('/(tabs)/content/schedule'); }} fullWidth />
           <Button title={t('content.generate.saveDraft')} variant="outline" onPress={() => { setScheduleOpen(false); toast({ title: 'Brouillon enregistré', variant: 'success' }); router.replace('/(tabs)/content'); }} fullWidth />
         </View>

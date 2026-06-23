@@ -25,7 +25,7 @@ export default function Reviews() {
         keyExtractor={(r) => r.id}
         contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: insets.bottom + 110 }}
         renderItem={({ item }) => <ReviewCard review={item} />}
-        ListEmptyComponent={<EmptyState icon={<Star size={36} color={c.muted} />} title={t('inbox.empty')} />}
+        ListEmptyComponent={<EmptyState icon={Star} title={t('inbox.empty')} />}
       />
     </View>
   );

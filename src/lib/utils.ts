@@ -1,8 +1,44 @@
 import { format as fmt } from 'date-fns';
 import { fr as frLocale, enUS } from 'date-fns/locale';
+import * as Haptics from 'expo-haptics';
 
 export function cn(...args: (string | false | null | undefined)[]) {
   return args.filter(Boolean).join(' ');
+}
+
+type HapticKind = 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' | 'select';
+
+/**
+ * Fire a haptic. Best-effort and fire-and-forget — never throws (haptics are
+ * unavailable on web and some emulators).
+ */
+export function haptic(kind: HapticKind = 'light') {
+  try {
+    switch (kind) {
+      case 'select':
+        void Haptics.selectionAsync();
+        break;
+      case 'success':
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        break;
+      case 'warning':
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        break;
+      case 'error':
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        break;
+      case 'medium':
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        break;
+      case 'heavy':
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        break;
+      default:
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  } catch {
+    // no-op
+  }
 }
 
 export function formatDate(d: Date | string, pattern = 'PPP', lng: 'fr' | 'en' = 'fr') {

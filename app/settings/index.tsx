@@ -65,7 +65,7 @@ export default function SettingsIndex() {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <View style={{ flex: 1 }}>
               <Text variant="bodyEmphasis">Bannière mode démo</Text>
-              <Text variant="caption" color="muted">Affiche « 🎭 Mode démo » en haut</Text>
+              <Text variant="caption" color="muted">Affiche « Mode démo » en haut de l’écran</Text>
             </View>
             <Switch value={banner} onValueChange={setBanner} />
           </View>

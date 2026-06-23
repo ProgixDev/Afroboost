@@ -4,11 +4,11 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Inbox } from 'lucide-react-native';
-import { Text, EmptyState, Divider, BlurHeader, Pill } from '@/components/ui';
+import { Text, EmptyState, Divider, BlurHeader, QueryBoundary } from '@/components/ui';
 import { ConversationListItem } from '@/components/domain/ConversationListItem';
 import { ChannelIcon } from '@/components/domain/ChannelIcon';
-import { mockConversations } from '@/mocks';
-import type { Channel } from '@/types';
+import { useConversations } from '@/lib/api';
+import type { Channel, Conversation } from '@/types';
 import { useTheme } from '@/lib/theme';
 
 const FILTERS: { key: 'all' | Channel | 'phone' | 'googleReview'; labelKey: string }[] = [
@@ -27,13 +27,15 @@ export default function InboxIndex() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<typeof FILTERS[number]['key']>('all');
+  const query = useConversations();
+  const conversations = query.data ?? [];
 
   const items = useMemo(() => {
-    if (filter === 'all') return mockConversations;
-    return mockConversations.filter((c) => c.channel === filter);
-  }, [filter]);
+    if (filter === 'all') return conversations;
+    return conversations.filter((c) => c.channel === filter);
+  }, [filter, conversations]);
 
-  const unreadCount = mockConversations.reduce((sum, c) => sum + c.unread, 0);
+  const unreadCount = conversations.reduce((sum, c) => sum + c.unread, 0);
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -71,19 +73,26 @@ export default function InboxIndex() {
           })}
         </ScrollView>
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(c) => c.id}
-        ItemSeparatorComponent={Divider}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
-        renderItem={({ item }) => (
-          <ConversationListItem
-            conv={item}
-            onPress={() => router.push({ pathname: '/(tabs)/inbox/[conversationId]', params: { conversationId: item.id } })}
+      <QueryBoundary
+        query={query}
+        empty={{ icon: Inbox, title: t('inbox.empty') }}
+      >
+        {() => (
+          <FlatList
+            data={items}
+            keyExtractor={(c) => c.id}
+            ItemSeparatorComponent={Divider}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
+            renderItem={({ item }: { item: Conversation }) => (
+              <ConversationListItem
+                conv={item}
+                onPress={() => router.push({ pathname: '/(tabs)/inbox/[conversationId]', params: { conversationId: item.id } })}
+              />
+            )}
+            ListEmptyComponent={<EmptyState icon={Inbox} title={t('inbox.empty')} />}
           />
         )}
-        ListEmptyComponent={<EmptyState icon={<Inbox size={36} color={c.muted} />} title={t('inbox.empty')} />}
-      />
+      </QueryBoundary>
     </View>
   );
 }
