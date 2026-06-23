@@ -4,11 +4,11 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Tabs, EmptyState, BlurHeader } from '@/components/ui';
+import { Tabs, EmptyState, BlurHeader, QueryBoundary } from '@/components/ui';
 import { PostCard } from '@/components/domain/PostCard';
-import { mockPosts } from '@/mocks';
+import { usePosts } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
-import type { PostStatus } from '@/types';
+import type { PostStatus, Post } from '@/types';
 
 type TabKey = 'feed' | 'review' | 'scheduled' | 'drafts';
 const STATUS_FOR_TAB: Record<TabKey, PostStatus[]> = {
@@ -24,10 +24,11 @@ export default function ContentIndex() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('feed');
+  const query = usePosts();
 
   const items = useMemo(
-    () => mockPosts.filter((p) => STATUS_FOR_TAB[tab].includes(p.status)),
-    [tab],
+    () => (query.data ?? []).filter((p) => STATUS_FOR_TAB[tab].includes(p.status)),
+    [tab, query.data],
   );
 
   return (
@@ -45,22 +46,34 @@ export default function ContentIndex() {
           ]}
         />
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(p) => p.id}
-        contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: insets.bottom + 110 }}
-        renderItem={({ item }) => (
-          <PostCard post={item} onPress={() => router.push({ pathname: '/(tabs)/content/[id]', params: { id: item.id } })} />
-        )}
-        ListEmptyComponent={
-          <EmptyState
-            icon={Sparkles}
-            tone="accent"
-            title={t('content.empty')}
-            description="Tapez le bouton sparkle pour créer votre première publication."
+      <QueryBoundary
+        query={query}
+        empty={{
+          icon: Sparkles,
+          tone: 'accent',
+          title: t('content.empty'),
+          description: 'Tapez le bouton sparkle pour créer votre première publication.',
+        }}
+      >
+        {() => (
+          <FlatList
+            data={items}
+            keyExtractor={(p) => p.id}
+            contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: insets.bottom + 110 }}
+            renderItem={({ item }: { item: Post }) => (
+              <PostCard post={item} onPress={() => router.push({ pathname: '/(tabs)/content/[id]', params: { id: item.id } })} />
+            )}
+            ListEmptyComponent={
+              <EmptyState
+                icon={Sparkles}
+                tone="accent"
+                title={t('content.empty')}
+                description="Tapez le bouton sparkle pour créer votre première publication."
+              />
+            }
           />
-        }
-      />
+        )}
+      </QueryBoundary>
     </View>
   );
 }

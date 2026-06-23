@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, Input, Button, Select, BlurHeader } from '@/components/ui';
 import type { CustomerSource } from '@/types';
-import { mockMutation } from '@/lib/mock-api';
+import { useCreateCustomer } from '@/lib/api';
 import { toast } from '@/stores/toastStore';
+import { haptic } from '@/lib/utils';
 import { useTheme } from '@/lib/theme';
 
 export default function AddCustomer() {
@@ -19,13 +20,18 @@ export default function AddCustomer() {
   const [email, setEmail] = useState('');
   const [source, setSource] = useState<CustomerSource>('phone');
   const [tags, setTags] = useState('');
-  const [busy, setBusy] = useState(false);
+  const createCustomer = useCreateCustomer();
 
   const submit = async () => {
     if (!name) return;
-    setBusy(true);
-    await mockMutation(null);
-    setBusy(false);
+    haptic('success');
+    await createCustomer.mutateAsync({
+      name,
+      phone: phone || undefined,
+      email: email || undefined,
+      source,
+      tags: tags ? tags.split(',').map((s) => s.trim()).filter(Boolean) : [],
+    });
     toast({ title: t('crm.add.saved'), variant: 'success' });
     router.back();
   };
@@ -56,7 +62,7 @@ export default function AddCustomer() {
           />
           <Input label={t('crm.fields.tags')} value={tags} onChangeText={setTags} placeholder="VIP, Anniversaire…" />
         </View>
-        <Button title={t('common.save')} onPress={submit} loading={busy} disabled={!name} fullWidth />
+        <Button title={t('common.save')} onPress={submit} loading={createCustomer.isPending} disabled={!name} fullWidth />
       </ScrollView>
     </View>
   );

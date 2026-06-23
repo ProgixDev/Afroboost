@@ -14,8 +14,8 @@ import { CompletionCard } from '@/components/domain/CompletionCard';
 import { useTheme, radius } from '@/lib/theme';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { useUsage, useUnreadCount } from '@/lib/api';
-import { mockBusiness, mockReports, mockUsage } from '@/mocks';
+import { useUsage, useUnreadCount, useReports } from '@/lib/api';
+import { mockBusiness, mockUsage } from '@/mocks';
 import { formatRelative, haptic } from '@/lib/utils';
 
 export default function Home() {
@@ -26,7 +26,8 @@ export default function Home() {
   const user = useAuthStore((s) => s.user);
   const lng = useSettingsStore((s) => s.language);
   const firstName = (user?.name || 'Patrick').split(/[.\s]/)[0]!;
-  const report = mockReports[0]!;
+  const { data: reports } = useReports();
+  const report = reports?.[0];
   const { data: usageData } = useUsage();
   const usage = usageData ?? mockUsage;
   const unread = useUnreadCount();
@@ -116,7 +117,7 @@ export default function Home() {
             <Text variant="overline" color="muted">Insight du jour</Text>
           </View>
           <Text variant="serifItalic" style={{ fontSize: 22, lineHeight: 30 }}>
-            "{report.trend.summary}"
+            "{report?.trend.summary ?? 'Votre activité de la semaine apparaîtra ici.'}"
           </Text>
           <Pressable
             onPress={() => router.push('/(tabs)/assistant')}

@@ -20,3 +20,13 @@ export async function startCheckout(
   }
   return { opened: false };
 }
+
+/** Open the Stripe customer portal (manage plan / payment / cancel). */
+export async function openBillingPortal(): Promise<{ opened: boolean }> {
+  const res = await apiMutate<{ url: string }>('/api/billing/portal', { method: 'POST' });
+  if (res?.url) {
+    await WebBrowser.openBrowserAsync(res.url);
+    return { opened: true };
+  }
+  return { opened: false };
+}

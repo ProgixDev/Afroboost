@@ -6,7 +6,8 @@ import { AIOrb } from '@/components/brand/AIOrb';
 import { useTheme, radius } from '@/lib/theme';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/stores/toastStore';
-import { mockMutation } from '@/lib/mock-api';
+import { useApproveReview, useRejectReview } from '@/lib/api';
+import { haptic } from '@/lib/utils';
 import type { Review } from '@/types';
 
 export function ReviewCard({ review }: { review: Review }) {
@@ -15,17 +16,18 @@ export function ReviewCard({ review }: { review: Review }) {
   const [draft, setDraft] = useState(review.draftReply);
   const [editing, setEditing] = useState(false);
   const [status, setStatus] = useState<Review['status']>(review.status);
-  const [busy, setBusy] = useState(false);
+  const approveMutation = useApproveReview();
+  const rejectMutation = useRejectReview();
 
   const approve = async () => {
-    setBusy(true);
-    await mockMutation(null);
-    setBusy(false);
     setStatus('approved');
+    haptic('success');
+    await approveMutation.mutateAsync({ id: review.id, reply: draft });
     toast({ title: t('inbox.review.approved'), variant: 'success' });
   };
   const reject = () => {
     setStatus('rejected');
+    rejectMutation.mutate(review.id);
     toast({ title: 'Avis rejeté' });
   };
 
@@ -67,7 +69,7 @@ export function ReviewCard({ review }: { review: Review }) {
         )}
         {status === 'pending' ? (
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-            <Button title={t('inbox.review.approve')} size="sm" onPress={approve} loading={busy} />
+            <Button title={t('inbox.review.approve')} size="sm" onPress={approve} loading={approveMutation.isPending} />
             <Button title={t('inbox.review.edit')} size="sm" variant="outline" onPress={() => setEditing((e) => !e)} />
             <Button title={t('inbox.review.reject')} size="sm" variant="ghost" onPress={reject} />
           </View>

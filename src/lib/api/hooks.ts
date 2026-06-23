@@ -7,8 +7,26 @@ import {
   mockCustomers,
   mockPosts,
   mockConversations,
+  mockCalls,
+  mockReviews,
+  mockReports,
+  mockBusiness,
 } from '@/mocks';
-import type { Notification, Usage, Customer, Post, Conversation } from '@/types';
+import type {
+  Notification,
+  Usage,
+  Customer,
+  Post,
+  Conversation,
+  Message,
+  Call,
+  Review,
+  DecisionReport,
+  Business,
+  Provider,
+  Plan,
+  Tone,
+} from '@/types';
 
 // ── Notifications ──────────────────────────────────────────────────────────
 
@@ -168,6 +186,138 @@ export function useConversations() {
   });
 }
 
+type RawMessage = Partial<Message> & { author?: Message['from']; created_at?: string };
+
+function normalizeMessage(m: RawMessage): Message {
+  return {
+    id: m.id as string,
+    from: m.from ?? m.author ?? 'customer',
+    text: m.text ?? '',
+    timestamp: m.timestamp ?? m.created_at ?? new Date().toISOString(),
+  };
+}
+
+export function useConversation(id: string) {
+  return useQuery({
+    queryKey: ['conversation', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const mock = mockConversations.find((x) => x.id === id) ?? null;
+      const raw = await apiQuery<(RawConversation & { messages?: RawMessage[] }) | null>(
+        `/api/inbox/conversations/${id}`,
+        mock,
+      );
+      if (!raw) return null;
+      return {
+        ...normalizeConversation(raw),
+        messages: (raw.messages ?? []).map(normalizeMessage),
+      } as Conversation;
+    },
+  });
+}
+
+/** Send a reply; optimistically appends a business message to the thread. */
+export function useReplyMutation(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (text: string) =>
+      apiMutate(`/api/inbox/conversations/${id}/reply`, { method: 'POST', body: { text } }),
+    onMutate: async (text: string) => {
+      await qc.cancelQueries({ queryKey: ['conversation', id] });
+      const prev = qc.getQueryData<Conversation | null>(['conversation', id]);
+      const optimistic: Message = {
+        id: `tmp_${(prev?.messages.length ?? 0)}_${text.length}`,
+        from: 'business',
+        text,
+        timestamp: new Date().toISOString(),
+      };
+      qc.setQueryData<Conversation | null>(['conversation', id], (old) =>
+        old ? { ...old, messages: [...old.messages, optimistic], lastMessage: text } : old,
+      );
+      return { prev };
+    },
+    onError: (_e, _t, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(['conversation', id], ctx.prev);
+    },
+    // No thread invalidation: keeps the optimistic message in demo mode; with a
+    // live API the reply is persisted server-side and reconciles on next mount.
+  });
+}
+
+// ── Calls ──────────────────────────────────────────────────────────────────
+
+type RawCall = Partial<Call> & {
+  duration_sec?: number;
+  handled_by?: Call['handledBy'];
+  created_at?: string;
+};
+
+function normalizeCall(r: RawCall): Call {
+  return {
+    id: r.id as string,
+    caller: r.caller ?? '',
+    number: r.number ?? '',
+    durationSec: r.durationSec ?? r.duration_sec ?? 0,
+    intent: r.intent ?? '',
+    handledBy: r.handledBy ?? r.handled_by ?? 'ai',
+    timestamp: r.timestamp ?? r.created_at ?? new Date().toISOString(),
+    transcript: r.transcript ?? [],
+  };
+}
+
+export function useCalls() {
+  return useQuery({
+    queryKey: ['calls'],
+    queryFn: async () => {
+      const rows = await apiQuery<RawCall[]>('/api/inbox/calls', mockCalls);
+      return rows.map(normalizeCall);
+    },
+  });
+}
+
+// ── Reviews ────────────────────────────────────────────────────────────────
+
+type RawReview = Partial<Review> & { draft_reply?: string; created_at?: string };
+
+function normalizeReview(r: RawReview): Review {
+  return {
+    id: r.id as string,
+    author: r.author ?? '',
+    rating: (r.rating ?? 5) as Review['rating'],
+    snippet: r.snippet ?? '',
+    draftReply: r.draftReply ?? r.draft_reply ?? '',
+    status: (r.status ?? 'pending') as Review['status'],
+    timestamp: r.timestamp ?? r.created_at ?? new Date().toISOString(),
+  };
+}
+
+export function useReviews() {
+  return useQuery({
+    queryKey: ['reviews'],
+    queryFn: async () => {
+      const rows = await apiQuery<RawReview[]>('/api/reviews', mockReviews);
+      return rows.map(normalizeReview);
+    },
+  });
+}
+
+export function useApproveReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reply }: { id: string; reply?: string }) =>
+      apiMutate(`/api/reviews/${id}/approve`, { method: 'POST', body: reply ? { reply } : {} }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['reviews'] }),
+  });
+}
+
+export function useRejectReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiMutate(`/api/reviews/${id}/reject`, { method: 'POST' }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['reviews'] }),
+  });
+}
+
 // ── Customers ──────────────────────────────────────────────────────────────
 
 type RawCustomer = Partial<Customer> & {
@@ -197,6 +347,242 @@ export function useCustomers() {
     queryFn: async () => {
       const rows = await apiQuery<RawCustomer[]>('/api/customers', mockCustomers);
       return rows.map(normalizeCustomer);
+    },
+  });
+}
+
+export function useCustomer(id: string) {
+  return useQuery({
+    queryKey: ['customer', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const mock = mockCustomers.find((x) => x.id === id) ?? null;
+      const raw = await apiQuery<RawCustomer | null>(`/api/customers/${id}`, mock);
+      return raw ? normalizeCustomer(raw) : null;
+    },
+  });
+}
+
+export type CustomerInput = {
+  name: string;
+  phone?: string;
+  email?: string;
+  source?: Customer['source'];
+  tags?: string[];
+  notes?: string;
+};
+
+export function useCreateCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CustomerInput) =>
+      apiMutate('/api/customers', { method: 'POST', body: input }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['customers'] }),
+  });
+}
+
+export function useUpdateCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<CustomerInput> }) =>
+      apiMutate(`/api/customers/${id}`, { method: 'PATCH', body: patch }),
+    onSettled: (_d, _e, vars) => {
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['customer', vars.id] });
+    },
+  });
+}
+
+export function useDeleteCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiMutate(`/api/customers/${id}`, { method: 'DELETE' }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['customers'] }),
+  });
+}
+
+// ── Posts ──────────────────────────────────────────────────────────────────
+
+type RawPost = Partial<Post> & {
+  media_url?: string;
+  scheduled_at?: string;
+  published_at?: string;
+};
+
+function normalizePost(r: RawPost): Post {
+  return {
+    id: r.id as string,
+    caption: r.caption ?? '',
+    imageUrl: r.imageUrl ?? r.media_url ?? '',
+    channels: r.channels ?? [],
+    status: (r.status ?? 'draft') as Post['status'],
+    scheduledAt: r.scheduledAt ?? r.scheduled_at,
+    publishedAt: r.publishedAt ?? r.published_at,
+    engagement: r.engagement,
+    template: r.template,
+  };
+}
+
+export function usePosts() {
+  return useQuery({
+    queryKey: ['posts'],
+    queryFn: async () => {
+      const rows = await apiQuery<RawPost[]>('/api/posts', mockPosts);
+      return rows.map(normalizePost);
+    },
+  });
+}
+
+export function usePost(id: string) {
+  return useQuery({
+    queryKey: ['post', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const mock = mockPosts.find((p) => p.id === id) ?? null;
+      const raw = await apiQuery<RawPost | null>(`/api/posts/${id}`, mock);
+      return raw ? normalizePost(raw) : null;
+    },
+  });
+}
+
+export function useDeletePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiMutate(`/api/posts/${id}`, { method: 'DELETE' }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['posts'] }),
+  });
+}
+
+export function usePublishPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiMutate(`/api/posts/${id}/publish`, { method: 'POST' }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['posts'] }),
+  });
+}
+
+export function useSchedulePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt: string }) =>
+      apiMutate(`/api/posts/${id}/schedule`, { method: 'POST', body: { scheduledAt } }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['posts'] }),
+  });
+}
+
+// ── Reports ────────────────────────────────────────────────────────────────
+
+type RawReport = Partial<DecisionReport> & { week_start?: string; week_end?: string };
+
+function normalizeReport(r: RawReport): DecisionReport {
+  return {
+    id: r.id as string,
+    weekStart: r.weekStart ?? r.week_start ?? '',
+    weekEnd: r.weekEnd ?? r.week_end ?? '',
+    trend: r.trend ?? { summary: '', series: [] },
+    wins: r.wins ?? [],
+    issues: r.issues ?? [],
+    actions: r.actions ?? [],
+  };
+}
+
+export function useReports() {
+  return useQuery({
+    queryKey: ['reports'],
+    queryFn: async () => {
+      const rows = await apiQuery<RawReport[]>('/api/reports', mockReports);
+      return rows.map(normalizeReport);
+    },
+  });
+}
+
+export function useGenerateReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiMutate('/api/reports/generate', { method: 'POST' }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['reports'] }),
+  });
+}
+
+// ── Profile (business settings + connected accounts) ────────────────────────
+
+export type ProfileData = {
+  name: string;
+  address: string;
+  tone: Tone;
+  services: string[];
+  languages: Business['languages'];
+  plan: Plan;
+  connectedAccounts: Partial<Record<Provider, boolean>>;
+};
+
+function normalizeProfile(r: Record<string, unknown>): ProfileData {
+  return {
+    name: (r.name as string) ?? '',
+    address: (r.address as string) ?? '',
+    tone: (r.tone as Tone) ?? 'warm',
+    services: (r.services as string[]) ?? [],
+    languages: (r.languages as Business['languages']) ?? ['fr'],
+    plan: (r.plan as Plan) ?? 'decouverte',
+    connectedAccounts:
+      (r.connectedAccounts as Partial<Record<Provider, boolean>>) ??
+      (r.connected_accounts as Partial<Record<Provider, boolean>>) ??
+      {},
+  };
+}
+
+export function useProfile() {
+  return useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const raw = await apiQuery<Record<string, unknown>>(
+        '/api/profile',
+        mockBusiness as unknown as Record<string, unknown>,
+      );
+      return normalizeProfile(raw);
+    },
+  });
+}
+
+export type ProfilePatch = Partial<Pick<ProfileData, 'name' | 'address' | 'tone' | 'services'>>;
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: ProfilePatch) =>
+      apiMutate('/api/profile', { method: 'PATCH', body: patch }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['profile'] }),
+  });
+}
+
+// ── Subscription ───────────────────────────────────────────────────────────
+
+export type InvoiceVM = { id: string; date: string; amount: string; status: string };
+
+const MOCK_SUBSCRIPTION = {
+  subscription: { plan: mockBusiness.plan, status: 'active', current_period_end: mockBusiness.trialEndsAt },
+  invoices: [
+    { id: 'in1', issued_at: '2026-04-15', amount: 97, status: 'paid' },
+    { id: 'in2', issued_at: '2026-03-15', amount: 97, status: 'paid' },
+    { id: 'in3', issued_at: '2026-02-15', amount: 97, status: 'paid' },
+  ],
+};
+
+export function useSubscription() {
+  return useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
+      const raw = await apiQuery<{
+        subscription: Record<string, unknown> | null;
+        invoices: Record<string, unknown>[];
+      }>('/api/billing/subscription', MOCK_SUBSCRIPTION);
+      const invoices: InvoiceVM[] = (raw.invoices ?? []).map((inv) => ({
+        id: (inv.id as string) ?? '',
+        date: ((inv.issued_at as string) ?? (inv.date as string) ?? '').slice(0, 10),
+        amount: typeof inv.amount === 'number' ? `${inv.amount} $` : ((inv.amount as string) ?? ''),
+        status: (inv.status as string) ?? '',
+      }));
+      return { subscription: raw.subscription, invoices };
     },
   });
 }

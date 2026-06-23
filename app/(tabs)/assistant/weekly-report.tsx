@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, Card, Checkbox, BlurHeader, SectionHeader } from '@/components/ui';
+import { Text, Card, Checkbox, BlurHeader, EmptyState, Skeleton } from '@/components/ui';
 import { GlowCard } from '@/components/brand/GlowCard';
 import { AIOrb } from '@/components/brand/AIOrb';
 import { MiniBarChart } from '@/components/domain/MiniBarChart';
-import { mockReports } from '@/mocks';
+import { BarChart3 } from 'lucide-react-native';
+import { useReports } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTheme } from '@/lib/theme';
@@ -16,8 +17,35 @@ export default function WeeklyReport({ embedded }: { embedded?: boolean }) {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const lng = useSettingsStore((s) => s.language);
-  const report = mockReports[0]!;
-  const [checked, setChecked] = useState(report.actions.map((a) => a.done));
+  const query = useReports();
+  const report = query.data?.[0];
+  const [checked, setChecked] = useState<boolean[]>([]);
+  const [seeded, setSeeded] = useState(false);
+
+  // Seed action checkboxes once the report loads.
+  if (report && !seeded) {
+    setChecked(report.actions.map((a) => a.done));
+    setSeeded(true);
+  }
+
+  if (!report) {
+    const placeholder = query.isLoading ? (
+      <View style={{ padding: 20, gap: 14 }}>
+        <Skeleton height={120} style={{ borderRadius: 18 }} />
+        <Skeleton height={90} style={{ borderRadius: 18 }} />
+        <Skeleton height={90} style={{ borderRadius: 18 }} />
+      </View>
+    ) : (
+      <EmptyState icon={BarChart3} title="Aucun rapport" description="Votre premier rapport hebdomadaire arrive bientôt." />
+    );
+    if (embedded) return placeholder;
+    return (
+      <View style={{ flex: 1, backgroundColor: c.background }}>
+        <BlurHeader back title={t('assistant.tabs.report')} />
+        {placeholder}
+      </View>
+    );
+  }
 
   const Body = (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 18, paddingBottom: insets.bottom + 110 }}>

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,11 @@ import { Sparkles, Send, MoreVertical } from 'lucide-react-native';
 import { Text, Input, Pill, Sheet, Button, BlurHeader } from '@/components/ui';
 import { AIOrb } from '@/components/brand/AIOrb';
 import { useTheme, radius } from '@/lib/theme';
-import { mockConversations } from '@/mocks';
+import { useConversation, useReplyMutation } from '@/lib/api';
 import { mockDelay } from '@/lib/mock-api';
-import { genId, formatRelative } from '@/lib/utils';
+import { formatRelative, haptic } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { toast } from '@/stores/toastStore';
-import type { Message } from '@/types';
 
 const AI_SUGGESTIONS = [
   'Bonjour ! Oui, nous avons une table disponible. Pour combien de personnes ?',
@@ -27,8 +26,9 @@ export default function ConversationDetail() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const lng = useSettingsStore((s) => s.language);
-  const conv = useMemo(() => mockConversations.find((x) => x.id === conversationId), [conversationId]);
-  const [messages, setMessages] = useState<Message[]>(conv?.messages ?? []);
+  const { data: conv, isLoading } = useConversation(conversationId);
+  const reply = useReplyMutation(conversationId);
+  const messages = conv?.messages ?? [];
   const [draft, setDraft] = useState('');
   const [aiPulse, setAiPulse] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,14 +38,18 @@ export default function ConversationDetail() {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <BlurHeader back />
-        <Text>Conversation introuvable.</Text>
+        <Text style={{ padding: 20 }} color="muted">
+          {isLoading ? '' : 'Conversation introuvable.'}
+        </Text>
       </View>
     );
   }
 
   const send = () => {
-    if (!draft.trim()) return;
-    setMessages((m) => [...m, { id: genId('m'), from: 'business', text: draft.trim(), timestamp: new Date().toISOString() }]);
+    const text = draft.trim();
+    if (!text) return;
+    haptic('light');
+    reply.mutate(text);
     setDraft('');
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
   };

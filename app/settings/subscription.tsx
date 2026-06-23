@@ -4,25 +4,32 @@ import { useTranslation } from 'react-i18next';
 import { ScreenContainer, Header } from '@/components/layout';
 import { Text, Card, Button, Sheet, Modal, Divider } from '@/components/ui';
 import { PlanCard } from '@/components/domain/PlanCard';
-import { mockBusiness } from '@/mocks';
-import { useTheme } from '@/lib/theme';
+import { useProfile, useSubscription, openBillingPortal } from '@/lib/api';
 import { toast } from '@/stores/toastStore';
-import { useRouter } from 'expo-router';
+import { haptic } from '@/lib/utils';
 import type { Plan } from '@/types';
 
 export default function Subscription() {
   const { t } = useTranslation();
-  const router = useRouter();
-  const { c } = useTheme();
+  const { data: profile } = useProfile();
+  const { data: sub } = useSubscription();
   const [planSheet, setPlanSheet] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
-  const [plan, setPlan] = useState<Plan>(mockBusiness.plan);
+  const [plan, setPlan] = useState<Plan>('performance');
+  const [planSeeded, setPlanSeeded] = useState(false);
 
-  const invoices = [
-    { id: 'in1', date: '2026-04-15', amount: '97 $', status: 'Payée' },
-    { id: 'in2', date: '2026-03-15', amount: '97 $', status: 'Payée' },
-    { id: 'in3', date: '2026-02-15', amount: '97 $', status: 'Payée' },
-  ];
+  if (profile && !planSeeded) {
+    setPlan(profile.plan);
+    setPlanSeeded(true);
+  }
+
+  const invoices = sub?.invoices ?? [];
+
+  const manage = async () => {
+    haptic('medium');
+    const { opened } = await openBillingPortal();
+    if (!opened) toast({ title: 'Forfait mis à jour', variant: 'success' });
+  };
 
   return (
     <ScreenContainer scroll>
@@ -96,7 +103,7 @@ export default function Subscription() {
           fullWidth
           onPress={() => {
             setPlanSheet(false);
-            toast({ title: 'Forfait mis à jour', variant: 'success' });
+            manage();
           }}
         />
       </Sheet>
@@ -113,8 +120,7 @@ export default function Subscription() {
               fullWidth
               onPress={() => {
                 setCancelOpen(false);
-                toast({ title: 'Abonnement annulé', variant: 'default' });
-                router.back();
+                manage();
               }}
             />
           </View>

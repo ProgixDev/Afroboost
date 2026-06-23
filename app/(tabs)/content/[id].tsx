@@ -6,8 +6,8 @@ import { Heart, MessageCircle, Eye, Edit3, Copy, Trash2, RefreshCw } from 'lucid
 import { Text, Card, Button, Pill, BlurHeader, AnimatedNumber, Modal } from '@/components/ui';
 import { ChannelIcon } from '@/components/domain/ChannelIcon';
 import { useTheme } from '@/lib/theme';
-import { mockPosts } from '@/mocks';
-import { formatDate } from '@/lib/utils';
+import { usePost, useDeletePost, usePublishPost } from '@/lib/api';
+import { formatDate, haptic } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { toast } from '@/stores/toastStore';
 import { useTranslation } from 'react-i18next';
@@ -19,14 +19,18 @@ export default function PostDetail() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const lng = useSettingsStore((s) => s.language);
-  const post = mockPosts.find((p) => p.id === id);
+  const { data: post, isLoading } = usePost(id);
+  const deletePost = useDeletePost();
+  const republish = usePublishPost();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!post) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <BlurHeader back />
-        <Text>Publication introuvable.</Text>
+        <Text style={{ padding: 20 }} color="muted">
+          {isLoading ? '' : 'Publication introuvable.'}
+        </Text>
       </View>
     );
   }
@@ -62,7 +66,7 @@ export default function PostDetail() {
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
             <Button title={t('common.edit')} variant="outline" leftIcon={<Edit3 size={16} color={c.foreground} />} />
             <Button title={t('content.post.duplicate')} variant="outline" leftIcon={<Copy size={16} color={c.foreground} />} onPress={() => toast({ title: 'Dupliquée', variant: 'success' })} />
-            <Button title={t('content.post.republish')} variant="outline" leftIcon={<RefreshCw size={16} color={c.foreground} />} onPress={() => toast({ title: 'Republiée', variant: 'success' })} />
+            <Button title={t('content.post.republish')} variant="outline" leftIcon={<RefreshCw size={16} color={c.foreground} />} loading={republish.isPending} onPress={async () => { haptic('medium'); await republish.mutateAsync(post.id); toast({ title: 'Republiée', variant: 'success' }); }} />
             <Button title={t('common.delete')} variant="destructive" leftIcon={<Trash2 size={16} color="#fff" />} onPress={() => setConfirmDelete(true)} />
           </View>
         </View>
@@ -83,8 +87,10 @@ export default function PostDetail() {
             variant="destructive"
             fullWidth
             style={{ flex: 1 }}
-            onPress={() => {
+            onPress={async () => {
               setConfirmDelete(false);
+              haptic('warning');
+              await deletePost.mutateAsync(post.id);
               toast({ title: 'Publication supprimée', variant: 'success' });
               router.back();
             }}

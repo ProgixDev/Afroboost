@@ -3,16 +3,41 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ScreenContainer, Header } from '@/components/layout';
 import { Input, Button, Text, RadioGroup } from '@/components/ui';
-import { mockBusiness } from '@/mocks';
+import { useProfile, useUpdateProfile } from '@/lib/api';
 import type { Tone } from '@/types';
 import { toast } from '@/stores/toastStore';
+import { haptic } from '@/lib/utils';
 
 export default function BusinessSettings() {
   const { t } = useTranslation();
-  const [name, setName] = useState(mockBusiness.name);
-  const [address, setAddress] = useState(mockBusiness.address);
-  const [tone, setTone] = useState<Tone>(mockBusiness.tone);
-  const [services, setServices] = useState(mockBusiness.services.join(', '));
+  const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
+
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [tone, setTone] = useState<Tone>('warm');
+  const [services, setServices] = useState('');
+  const [seeded, setSeeded] = useState(false);
+
+  // Seed fields once the profile loads.
+  if (profile && !seeded) {
+    setName(profile.name);
+    setAddress(profile.address);
+    setTone(profile.tone);
+    setServices(profile.services.join(', '));
+    setSeeded(true);
+  }
+
+  const save = async () => {
+    haptic('success');
+    await updateProfile.mutateAsync({
+      name,
+      address,
+      tone,
+      services: services.split(',').map((s) => s.trim()).filter(Boolean),
+    });
+    toast({ title: 'Commerce enregistré', variant: 'success' });
+  };
 
   return (
     <ScreenContainer scroll>
@@ -32,7 +57,7 @@ export default function BusinessSettings() {
             { value: 'direct', label: t('onboarding.businessProfile.toneDirect') },
           ]}
         />
-        <Button title={t('common.save')} fullWidth onPress={() => toast({ title: 'Commerce enregistré', variant: 'success' })} />
+        <Button title={t('common.save')} fullWidth loading={updateProfile.isPending} onPress={save} />
       </View>
     </ScreenContainer>
   );

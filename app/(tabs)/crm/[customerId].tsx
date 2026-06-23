@@ -6,9 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Mail, Phone, MapPin } from 'lucide-react-native';
 import { Text, Avatar, Tabs, Card, Input, Button, Pill, BlurHeader } from '@/components/ui';
-import { mockCustomers } from '@/mocks';
+import { useCustomer, useUpdateCustomer } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
-import { formatDate } from '@/lib/utils';
+import { formatDate, haptic } from '@/lib/utils';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { toast } from '@/stores/toastStore';
 
@@ -20,18 +20,34 @@ export default function CustomerDetail() {
   const { c } = useTheme();
   const insets = useSafeAreaInsets();
   const lng = useSettingsStore((s) => s.language);
-  const cust = mockCustomers.find((x) => x.id === customerId);
+  const { data: cust, isLoading } = useCustomer(customerId);
+  const updateCustomer = useUpdateCustomer();
   const [tab, setTab] = useState<Tab>('profile');
-  const [notes, setNotes] = useState(cust?.notes ?? '');
+  const [notes, setNotes] = useState('');
+  const [notesInit, setNotesInit] = useState(false);
+
+  // Seed the notes field once the customer loads.
+  if (cust && !notesInit) {
+    setNotes(cust.notes ?? '');
+    setNotesInit(true);
+  }
 
   if (!cust) {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <BlurHeader back />
-        <Text>Client introuvable.</Text>
+        <Text style={{ padding: 20 }} color="muted">
+          {isLoading ? '' : 'Client introuvable.'}
+        </Text>
       </View>
     );
   }
+
+  const saveNotes = async () => {
+    haptic('success');
+    await updateCustomer.mutateAsync({ id: cust.id, patch: { notes } });
+    toast({ title: 'Notes enregistrées', variant: 'success' });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
@@ -89,7 +105,7 @@ export default function CustomerDetail() {
         {tab === 'notes' && (
           <View style={{ gap: 12 }}>
             <Input variant="filled" multiline value={notes} onChangeText={setNotes} placeholder="Notes…" />
-            <Button title={t('common.save')} onPress={() => toast({ title: 'Notes enregistrées', variant: 'success' })} />
+            <Button title={t('common.save')} loading={updateCustomer.isPending} onPress={saveNotes} />
           </View>
         )}
       </ScrollView>
