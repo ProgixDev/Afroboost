@@ -17,27 +17,47 @@ export function isApiConfigured(): boolean {
   return !!API_URL;
 }
 
-type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown };
+type RequestOptions = Omit<RequestInit, 'body'> & {
+  body?: unknown;
+  /** Abort the request after this many ms (default 20s) so it never hangs. */
+  timeoutMs?: number;
+};
 
 /**
  * Authenticated request against the NestJS API. Attaches the Supabase access
- * token (the backend's OwnerAuthGuard expects it). Throws ApiError on failure.
+ * token (the backend's OwnerAuthGuard expects it). Throws ApiError on failure,
+ * and never hangs forever — it aborts after `timeoutMs`.
  */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   if (!API_URL) throw new ApiError('API not configured', 0);
 
+  const { timeoutMs = 20000, ...init } = options;
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init.headers,
+      },
+      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    });
+  } catch (e) {
+    const aborted = (e as Error)?.name === 'AbortError';
+    throw new ApiError(
+      aborted ? `Request timed out after ${timeoutMs}ms` : `Network error: ${(e as Error).message}`,
+      0,
+    );
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     let message = `HTTP ${res.status}`;

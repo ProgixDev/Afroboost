@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { ScreenContainer, Header } from '@/components/layout';
 import { MockOAuthRow } from '@/components/domain/MockOAuthButton';
-import { connectMeta, useProfile } from '@/lib/api';
+import { connectMeta, ConnectCancelledError, useProfile } from '@/lib/api';
+import { toast } from '@/stores/toastStore';
 
 export default function AccountsSettings() {
   const { t } = useTranslation();
@@ -16,8 +17,17 @@ export default function AccountsSettings() {
   // succeeds, refetch the profile so both rows reflect the real connected state
   // (the rows are keyed by connection state, so they remount as "Connecté").
   const connectMetaAndRefresh = async () => {
-    await connectMeta();
-    await queryClient.invalidateQueries({ queryKey: ['profile'] });
+    try {
+      await connectMeta();
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
+    } catch (e) {
+      // A plain cancel isn't an error; anything else gets surfaced so the user
+      // isn't left staring at a row that silently did nothing.
+      if (!(e instanceof ConnectCancelledError)) {
+        toast({ title: (e as Error).message || 'Connexion échouée', variant: 'danger' });
+      }
+      throw e; // keep the row "Non connecté"
+    }
   };
 
   return (

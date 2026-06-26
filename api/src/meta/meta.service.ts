@@ -53,13 +53,18 @@ export class MetaService {
   getAuthUrl(tenantId: string): string {
     const appId = this.required('META_APP_ID');
     const redirect = this.required('META_REDIRECT_URI');
+    const configId = this.config.get<string>('META_LOGIN_CONFIG_ID');
     const params = new URLSearchParams({
       client_id: appId,
       redirect_uri: redirect,
       state: tenantId,
       response_type: 'code',
-      scope: SCOPES.join(','),
     });
+    // Facebook Login for Business: the configuration (config_id) defines the
+    // permissions + assets, so we pass it instead of a raw scope list. Fall back
+    // to scope for plain Facebook Login when no config is set.
+    if (configId) params.set('config_id', configId);
+    else params.set('scope', SCOPES.join(','));
     return `https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`;
   }
 
@@ -83,24 +88,33 @@ export class MetaService {
     const appSecret = this.required('META_APP_SECRET');
     const redirect = this.required('META_REDIRECT_URI');
 
-    // 1. Code → short-lived user token.
-    const short = await this.graph<{ access_token: string }>('/oauth/access_token', {
-      client_id: appId,
-      client_secret: appSecret,
-      redirect_uri: redirect,
-      code,
-    });
-
-    // 2. Short → long-lived user token.
-    const long = await this.graph<{ access_token: string; expires_in?: number }>(
+    // 1. Code → access token. With a Facebook Login for Business config this is
+    //    a long-lived system-user token; with plain login it's a short-lived
+    //    user token that still needs exchanging in step 2.
+    const initial = await this.graph<{ access_token: string; expires_in?: number }>(
       '/oauth/access_token',
       {
-        grant_type: 'fb_exchange_token',
         client_id: appId,
         client_secret: appSecret,
-        fb_exchange_token: short.access_token,
+        redirect_uri: redirect,
+        code,
       },
     );
+
+    // 2. Short → long-lived. System-user tokens (config_id flow) are already
+    //    long-lived and can't be exchanged, so skip this step for them.
+    const configId = this.config.get<string>('META_LOGIN_CONFIG_ID');
+    const long = configId
+      ? initial
+      : await this.graph<{ access_token: string; expires_in?: number }>(
+          '/oauth/access_token',
+          {
+            grant_type: 'fb_exchange_token',
+            client_id: appId,
+            client_secret: appSecret,
+            fb_exchange_token: initial.access_token,
+          },
+        );
 
     // 3. Pages the user manages (+ linked IG business accounts).
     const pages = await this.graph<{
