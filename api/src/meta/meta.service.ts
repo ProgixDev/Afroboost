@@ -32,9 +32,6 @@ interface PublishInput {
   mediaUrl?: string | null;
 }
 
-/** Where a connect flow was started from — decides the post-OAuth redirect. */
-export type ConnectPlatform = 'mobile' | 'web';
-
 /**
  * Meta (Facebook + Instagram) OAuth and Graph publishing.
  *
@@ -53,41 +50,30 @@ export class MetaService {
 
   // ── OAuth ────────────────────────────────────────────────────────────────
 
-  getAuthUrl(tenantId: string, platform: ConnectPlatform = 'mobile'): string {
+  getAuthUrl(tenantId: string): string {
     const appId = this.required('META_APP_ID');
     const redirect = this.required('META_REDIRECT_URI');
     const params = new URLSearchParams({
       client_id: appId,
       redirect_uri: redirect,
-      // state carries the tenant id AND where to send the user back after the
-      // OAuth dance (mobile deep link vs web). tenant ids are UUIDs (no '|').
-      state: `${tenantId}|${platform}`,
+      state: tenantId,
       response_type: 'code',
       scope: SCOPES.join(','),
     });
     return `https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`;
   }
 
-  /** Split the OAuth `state` back into the tenant id and originating platform. */
-  parseState(state: string): { tenantId: string; platform: ConnectPlatform } {
-    const [tenantId, platform] = state.split('|');
-    return { tenantId, platform: platform === 'web' ? 'web' : 'mobile' };
-  }
-
   /**
-   * Where to redirect the browser once the callback finishes. Mobile returns to
-   * the app's deep link (so expo-web-browser's auth session auto-closes and the
-   * Accounts screen refreshes); web returns to the console. `status` lets the
-   * client show a success/error toast.
+   * Where to redirect the browser once the callback finishes. AfroBoost is a
+   * mobile-only app, so this is always the app's deep link — expo-web-browser's
+   * auth session auto-closes on it and the Accounts screen refreshes. `status`
+   * lets the app show a success/error toast.
    */
-  connectRedirect(platform: ConnectPlatform, status: 'success' | 'error'): string {
-    const base =
-      platform === 'web'
-        ? `${this.config.get<string>('APP_URL', 'https://app.afroboost.ca')}/settings/accounts`
-        : this.config.get<string>(
-            'MOBILE_REDIRECT_URI',
-            'afroboost://settings/accounts',
-          );
+  connectRedirect(status: 'success' | 'error'): string {
+    const base = this.config.get<string>(
+      'MOBILE_REDIRECT_URI',
+      'afroboost://settings/accounts',
+    );
     const query = status === 'success' ? 'connected=meta' : 'error=meta';
     return `${base}${base.includes('?') ? '&' : '?'}${query}`;
   }

@@ -26,25 +26,17 @@ export class MetaController {
     private readonly config: ConfigService,
   ) {}
 
-  /**
-   * Owner starts the connect flow; returns the Facebook OAuth dialog URL.
-   * `platform` (default mobile) decides where the user is sent back afterwards:
-   * the app deep link (mobile) or the web console.
-   */
+  /** Owner starts the connect flow; returns the Facebook OAuth dialog URL. */
   @UseGuards(OwnerAuthGuard)
   @Get('connect')
-  connect(
-    @CurrentTenant() tenantId: string,
-    @Query('platform') platform?: string,
-  ) {
-    const target = platform === 'web' ? 'web' : 'mobile';
-    return { url: this.meta.getAuthUrl(tenantId, target) };
+  connect(@CurrentTenant() tenantId: string) {
+    return { url: this.meta.getAuthUrl(tenantId) };
   }
 
   /**
-   * OAuth redirect target. `state` carries the tenant id + originating platform.
-   * Always redirects back to the client (success or error) rather than throwing,
-   * so the in-app browser closes and returns the user to the app cleanly.
+   * OAuth redirect target (state carries the tenantId). Always redirects back to
+   * the app deep link — success or error — rather than throwing, so the in-app
+   * browser closes and returns the user to the Accounts screen cleanly.
    */
   @Get('callback')
   async callback(
@@ -53,13 +45,12 @@ export class MetaController {
     @Res() reply: FastifyReply,
   ) {
     if (!code || !state) throw new BadRequestException('Missing code/state');
-    const { tenantId, platform } = this.meta.parseState(state);
     let target: string;
     try {
-      await this.meta.handleCallback(code, tenantId);
-      target = this.meta.connectRedirect(platform, 'success');
+      await this.meta.handleCallback(code, state);
+      target = this.meta.connectRedirect('success');
     } catch {
-      target = this.meta.connectRedirect(platform, 'error');
+      target = this.meta.connectRedirect('error');
     }
     // Force a real 302 with the Location header. (reply.redirect() under Nest's
     // @Res() can leave the status at 200, which a browser won't follow.)

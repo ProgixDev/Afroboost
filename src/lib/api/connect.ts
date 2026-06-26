@@ -16,15 +16,18 @@ export async function connectMeta(): Promise<void> {
     return;
   }
   const { url } = await apiRequest<{ url: string }>(
-    '/api/integrations/meta/connect?platform=mobile',
+    '/api/integrations/meta/connect',
   );
-  // The backend callback redirects to afroboost://settings/accounts on success
-  // (or with ?error=meta on failure); the auth session closes on that deep link.
+  // The backend callback redirects to afroboost://settings/accounts?connected=meta
+  // on success (or ?error=meta on failure); the auth session closes on that deep
+  // link. Anything else (user dismissed/cancelled the browser, or an error came
+  // back) is NOT a successful connect, so we throw and let the caller keep the
+  // row "Non connecté".
   const result = await WebBrowser.openAuthSessionAsync(
     url,
     'afroboost://settings/accounts',
   );
-  if (result.type === 'success' && result.url.includes('error=meta')) {
-    throw new Error('Meta connection failed');
+  if (result.type !== 'success' || !result.url.includes('connected=meta')) {
+    throw new Error('Meta connection cancelled or failed');
   }
 }
