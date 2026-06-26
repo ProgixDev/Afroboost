@@ -18,6 +18,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           host: config.get<string>('REDIS_HOST', '127.0.0.1'),
           port: config.get<number>('REDIS_PORT', 6379),
           password: config.get<string>('REDIS_PASSWORD') || undefined,
+          // Railway's private network is IPv6-only; ioredis defaults to an
+          // IPv4 DNS lookup. family: 0 enables dual-stack resolution so the
+          // same config works locally (IPv4) and on Railway (IPv6).
+          family: 0,
         },
         defaultJobOptions: {
           attempts: 3,

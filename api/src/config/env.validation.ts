@@ -1,4 +1,4 @@
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Type } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -25,6 +25,7 @@ class EnvironmentVariables {
   @IsOptional()
   NODE_ENV: NodeEnv = NodeEnv.Development;
 
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(65535)
@@ -53,6 +54,7 @@ class EnvironmentVariables {
   @IsOptional()
   REDIS_HOST = '127.0.0.1';
 
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   @Max(65535)
