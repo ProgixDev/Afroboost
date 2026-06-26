@@ -15,6 +15,16 @@ export async function connectMeta(): Promise<void> {
     await mockDelay(900);
     return;
   }
-  const { url } = await apiRequest<{ url: string }>('/api/integrations/meta/connect');
-  await WebBrowser.openAuthSessionAsync(url, 'afroboost://settings/accounts');
+  const { url } = await apiRequest<{ url: string }>(
+    '/api/integrations/meta/connect?platform=mobile',
+  );
+  // The backend callback redirects to afroboost://settings/accounts on success
+  // (or with ?error=meta on failure); the auth session closes on that deep link.
+  const result = await WebBrowser.openAuthSessionAsync(
+    url,
+    'afroboost://settings/accounts',
+  );
+  if (result.type === 'success' && result.url.includes('error=meta')) {
+    throw new Error('Meta connection failed');
+  }
 }
