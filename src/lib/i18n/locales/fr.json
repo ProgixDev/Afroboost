@@ -96,6 +96,8 @@
     },
     "businessProfile": {
       "title": "Parlez-nous de votre commerce",
+      "nameRequired": "Le nom du commerce est requis",
+      "saveFailed": "Échec de l’enregistrement, réessayez",
       "stepType": "Type de commerce",
       "stepName": "Nom et adresse",
       "stepHours": "Heures d’ouverture",
@@ -119,7 +121,13 @@
     "connectSocials": {
       "title": "Connectez vos réseaux sociaux",
       "subtitle": "Pour que l’IA puisse publier à votre place.",
-      "explainer": "Vous pourrez désautoriser à tout moment depuis les Paramètres."
+      "explainer": "Vous pourrez désautoriser à tout moment depuis les Paramètres.",
+      "businessTitle": "Facebook & Instagram",
+      "businessCta": "Continuer avec Facebook",
+      "businessDesc": "Connectez-vous une seule fois avec Facebook pour gérer vos pages, messages et publicités — Instagram inclus.",
+      "businessConnected": "Vos pages Facebook et comptes Instagram sont connectés.",
+      "connectedBadge": "Connecté",
+      "connectFailed": "Connexion échouée"
     },
     "connectGoogle": {
       "title": "Profil Google d’entreprise",

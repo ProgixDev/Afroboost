@@ -96,6 +96,8 @@
     },
     "businessProfile": {
       "title": "Tell us about your business",
+      "nameRequired": "Business name is required",
+      "saveFailed": "Could not save, please retry",
       "stepType": "Business type",
       "stepName": "Name and address",
       "stepHours": "Opening hours",
@@ -119,7 +121,13 @@
     "connectSocials": {
       "title": "Connect your social accounts",
       "subtitle": "So the AI can post on your behalf.",
-      "explainer": "You can disconnect anytime from Settings."
+      "explainer": "You can disconnect anytime from Settings.",
+      "businessTitle": "Facebook & Instagram",
+      "businessCta": "Continue with Facebook",
+      "businessDesc": "Sign in once with Facebook to manage your pages, messages and ads — Instagram included.",
+      "businessConnected": "Your Facebook pages and Instagram accounts are connected.",
+      "connectedBadge": "Connected",
+      "connectFailed": "Connection failed"
     },
     "connectGoogle": {
       "title": "Google Business Profile",

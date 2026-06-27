@@ -1,10 +1,17 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
-import { apiMutate } from '@/lib/api/client';
+import { apiRequest, isApiConfigured } from '@/lib/api/client';
 import { signInWithGoogle as oauthGoogle, signOut as oauthSignOut } from '@/lib/auth';
 import type { Session } from '@supabase/supabase-js';
+import type { BusinessType } from '@/types';
 
 type User = { id: string; email: string; name: string };
+type RegisterOwnerInput = {
+  name: string;
+  businessName: string;
+  type?: BusinessType;
+  phone?: string;
+};
 type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
@@ -13,6 +20,13 @@ type AuthState = {
   signUp: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  /**
+   * Provision the tenant + owner on the backend (idempotent — returns the
+   * existing owner if already registered). Call once a session exists and the
+   * business name is known (end of the business-profile onboarding step).
+   * No-ops in demo mode (no API URL).
+   */
+  registerOwner: (input: RegisterOwnerInput) => Promise<void>;
   /** Hydrate from any persisted Supabase session and subscribe to changes. */
   init: () => Promise<void>;
 };
@@ -41,13 +55,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   signUp: async (email, password) => {
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
-    // Provision the tenant on the backend (best-effort; no-op without an API
-    // URL or before email confirmation). Safe to call again on first sign-in.
-    await apiMutate('/api/auth/register', { method: 'POST', body: { email } });
+    // Owner/tenant provisioning happens at the end of the business-profile
+    // onboarding step (registerOwner), once we have a session + business name.
   },
   signInWithGoogle: async () => {
     await oauthGoogle();
     // Session arrives via the onAuthStateChange listener registered in init().
+  },
+  registerOwner: async (input) => {
+    if (!isApiConfigured()) return;
+    // apiRequest attaches the session token and throws on failure (e.g. 400 if
+    // the business name is missing) so the caller can surface the error.
+    await apiRequest('/api/auth/register', { method: 'POST', body: input });
   },
   signOut: async () => {
     await oauthSignOut().catch(() => {});

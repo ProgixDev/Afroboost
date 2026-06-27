@@ -8,6 +8,8 @@ import * as Linking from 'expo-linking';
 import { Text, Button, Input, Stepper, RadioGroup, Pill, FloatingBack, Card } from '@/components/ui';
 import { Logo } from '@/components/Logo';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import { useAuthStore } from '@/stores/authStore';
+import { toast } from '@/stores/toastStore';
 import { useTheme, radius } from '@/lib/theme';
 import type { BusinessType, Tone, Language } from '@/types';
 
@@ -21,11 +23,40 @@ export default function BusinessProfile() {
   const insets = useSafeAreaInsets();
   const updateBiz = useOnboardingStore((s) => s.updateBusiness);
   const draft = useOnboardingStore((s) => s.businessDraft);
+  const registerOwner = useAuthStore((s) => s.registerOwner);
+  const ownerName = useAuthStore((s) => s.user?.name ?? '');
   const [step, setStep] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
-  const next = () => {
-    if (step < TOTAL - 1) setStep(step + 1);
-    else router.push('/(onboarding)/connect-socials');
+  const next = async () => {
+    if (step < TOTAL - 1) {
+      setStep(step + 1);
+      return;
+    }
+    // Final step: provision the owner + tenant on the backend before moving on.
+    // Everything downstream (connect, content, CRM…) requires this row to exist.
+    const businessName = (draft.name ?? '').trim();
+    if (!businessName) {
+      toast({ title: t('onboarding.businessProfile.nameRequired'), variant: 'danger' });
+      setStep(1); // jump back to the name/address step
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await registerOwner({
+        name: ownerName || businessName,
+        businessName,
+        type: draft.type,
+      });
+      router.push('/(onboarding)/connect-socials');
+    } catch (e) {
+      toast({
+        title: (e as Error).message || t('onboarding.businessProfile.saveFailed'),
+        variant: 'danger',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
   const prev = () => (step > 0 ? setStep(step - 1) : router.back());
 
@@ -96,7 +127,7 @@ export default function BusinessProfile() {
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 'auto' }}>
           <Button title={t('common.previous')} variant="outline" onPress={prev} pill={false} />
           <View style={{ flex: 1 }}>
-            <Button title={step === TOTAL - 1 ? t('common.continue') : t('common.next')} onPress={next} fullWidth pill={false} />
+            <Button title={step === TOTAL - 1 ? t('common.continue') : t('common.next')} onPress={next} loading={submitting} fullWidth pill={false} />
           </View>
         </View>
       </ScrollView>
