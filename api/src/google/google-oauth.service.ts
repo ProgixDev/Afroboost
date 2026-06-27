@@ -70,6 +70,60 @@ export class GoogleOAuthService {
         : null,
       scopes: GOOGLE_SCOPES[provider],
     });
+
+    // For Business reviews, capture the first managed location so reviews.sync()
+    // knows which location to read. Best-effort: requires Business Profile API
+    // access (allowlisted) and never blocks the connect if it isn't granted yet.
+    if (provider === 'google') {
+      await this.storeBusinessLocation(tenantId, token.access_token).catch(() => undefined);
+    }
+  }
+
+  /**
+   * Post-OAuth redirect — always the mobile app deep link (AfroBoost is mobile
+   * only), so expo-web-browser's auth session closes and the Accounts screen
+   * refreshes. Mirrors MetaService.connectRedirect.
+   */
+  connectRedirect(provider: 'google' | 'gmail', status: 'success' | 'error'): string {
+    const base = this.config.get<string>(
+      'MOBILE_REDIRECT_URI',
+      'afroboost://settings/accounts',
+    );
+    const key = status === 'success' ? 'connected' : 'error';
+    return `${base}${base.includes('?') ? '&' : '?'}${key}=${provider}`;
+  }
+
+  /**
+   * Resolve the owner's first Google Business Profile location and store its v4
+   * resource name (`accounts/{a}/locations/{l}`) in the connected-account
+   * metadata, which reviews.sync() reads. Uses the new Account Management +
+   * Business Information APIs; both require allowlisted Business Profile access.
+   */
+  private async storeBusinessLocation(tenantId: string, accessToken: string): Promise<void> {
+    const auth = { Authorization: `Bearer ${accessToken}` };
+    const accRes = await fetch(
+      'https://mybusinessaccountmanagement.googleapis.com/v1/accounts',
+      { headers: auth },
+    );
+    if (!accRes.ok) return;
+    const accBody = (await accRes.json()) as { accounts?: Array<{ name: string }> };
+    const account = accBody.accounts?.[0]?.name; // "accounts/123"
+    if (!account) return;
+
+    const locRes = await fetch(
+      `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?readMask=name,title&pageSize=1`,
+      { headers: auth },
+    );
+    if (!locRes.ok) return;
+    const locBody = (await locRes.json()) as {
+      locations?: Array<{ name: string; title?: string }>;
+    };
+    const loc = locBody.locations?.[0]; // name: "locations/456"
+    if (!loc?.name) return;
+
+    await this.accounts.upsert(tenantId, 'google', {
+      metadata: { locationName: `${account}/${loc.name}`, locationTitle: loc.title ?? null },
+    });
   }
 
   /** Returns a valid access token for a provider, refreshing if expired. */

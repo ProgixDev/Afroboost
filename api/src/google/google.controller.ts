@@ -6,7 +6,6 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { FastifyReply } from 'fastify';
 import { OwnerAuthGuard } from '../common/guards/owner-auth.guard';
 import { CurrentTenant } from '../common/decorators/current-owner.decorator';
@@ -15,10 +14,7 @@ import { GoogleOAuthService } from './google-oauth.service';
 /** Google OAuth connect/callback. Routes under /api/integrations/google. */
 @Controller('integrations/google')
 export class GoogleController {
-  constructor(
-    private readonly google: GoogleOAuthService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly google: GoogleOAuthService) {}
 
   /** service = 'google' (Business reviews) | 'gmail' (email). */
   @UseGuards(OwnerAuthGuard)
@@ -40,8 +36,19 @@ export class GoogleController {
     @Res() reply: FastifyReply,
   ) {
     if (!code || !state) throw new BadRequestException('Missing code/state');
-    await this.google.handleCallback(code, state);
-    const appUrl = this.config.get<string>('APP_URL', 'https://app.afroboost.ca');
-    return reply.redirect(`${appUrl}/settings/accounts?connected=google`);
+    const provider = state.split(':')[1] === 'gmail' ? 'gmail' : 'google';
+    let status: 'success' | 'error';
+    try {
+      await this.google.handleCallback(code, state);
+      status = 'success';
+    } catch {
+      status = 'error';
+    }
+    // Always redirect back to the app (deep link), forcing a real 302 so the
+    // in-app browser follows it and closes. (Same pattern as the Meta callback.)
+    return reply
+      .status(302)
+      .header('location', this.google.connectRedirect(provider, status))
+      .send();
   }
 }

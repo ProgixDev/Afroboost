@@ -7,6 +7,7 @@ import { Text, Button, FloatingBack } from '@/components/ui';
 import { Logo } from '@/components/Logo';
 import { MockOAuthButton } from '@/components/domain/MockOAuthButton';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import { connectGoogle } from '@/lib/api';
 import { useTheme } from '@/lib/theme';
 
 export default function ConnectGoogle() {
@@ -25,7 +26,7 @@ export default function ConnectGoogle() {
           <Text variant="display" style={{ fontSize: 36 }}>Vos avis,{'\n'}<Text variant="display" style={{ color: c.accent, fontSize: 36 }}>répondus.</Text></Text>
           <Text variant="serifItalic" color="muted" style={{ marginTop: 6 }}>{t('onboarding.connectGoogle.subtitle')}</Text>
         </View>
-        <MockOAuthButton provider="google" onPress={() => toggle('google', true)} />
+        <MockOAuthButton provider="google" onConnect={connectGoogle} onPress={() => toggle('google', true)} />
         <View style={{ flex: 1 }} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Button title={t('common.skip')} variant="outline" pill={false} onPress={() => router.push('/(onboarding)/connect-calendar')} />

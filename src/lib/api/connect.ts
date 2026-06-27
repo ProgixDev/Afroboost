@@ -44,3 +44,28 @@ export async function connectMeta(): Promise<void> {
     throw new Error('Meta connection failed');
   }
 }
+
+/**
+ * Start the Google Business Profile (reviews) OAuth connect flow. Same shape as
+ * connectMeta: the backend callback redirects to afroboost://settings/accounts
+ * ?connected=google on success (or ?error=google on failure).
+ */
+export async function connectGoogle(): Promise<void> {
+  if (!isApiConfigured()) {
+    await mockDelay(900);
+    return;
+  }
+  const { url } = await apiRequest<{ url: string }>(
+    '/api/integrations/google/connect?service=google',
+  );
+  const result = await WebBrowser.openAuthSessionAsync(
+    url,
+    'afroboost://settings/accounts',
+  );
+  if (result.type !== 'success') {
+    throw new ConnectCancelledError();
+  }
+  if (!result.url.includes('connected=google')) {
+    throw new Error('Google connection failed');
+  }
+}
